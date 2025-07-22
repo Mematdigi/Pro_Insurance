@@ -6,15 +6,12 @@ const jwt = require('jsonwebtoken');
 const Agent = require('../models/Agent');
 const Customer = require('../models/Customer');
 
-
 const loginController = async (req, res) => {
   const { identifier, password, role } = req.body;
 
    if (!identifier || !password || !role) {
     return res.status(400).json({ msg: "Missing fields" });
-  }
-
-  
+  }  
   if (!["Customer", "Agent"].includes(role))
     return res.status(400).json({ msg: "Invalid role" });
 
