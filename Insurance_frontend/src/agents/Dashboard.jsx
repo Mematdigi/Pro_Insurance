@@ -44,7 +44,6 @@ const AgentDashboard = () => {
 
         console.log("📥 Fetching policies for agent ID:", agent.id, "with category:", categoryParam);
         // const res = await fetch(`http://localhost:5000/api/agent/${agent.id}?category=${categoryParam}`);
-        //modify by suraj 
         // modify in categorySwitch        
         const res = await fetch(`http://localhost:5000/api/Insurance-by-Category?insuranceType=${categoryParam}&agentId=${agent.id}`);
         console.log(res);
