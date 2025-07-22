@@ -1,0 +1,174 @@
+.company-selection-page {
+  padding: 3rem 1.5rem;
+  background-color: #f9fafc;
+  min-height: 100vh;
+  text-align: center;
+
+  .title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+    color: #6b7280;
+  }
+
+  .selection-grid {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    justify-content: center;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .option-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    border: 1px solid #e5e7eb;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .option-icon {
+      width: 55%;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: #1f2937;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-excel {
+      background-color: #3b82f6;
+      color: white;
+
+      &:hover {
+        background-color: #2563eb;
+      }
+    }
+
+  }
+}
+.btn-manual {
+  background-color: #4338ca;
+  color: white;
+
+  &:hover {
+    background-color: #3730a3;
+    color: #e5e7eb;
+  }
+}
+
+
+// Import Excel Page Styling 
+.import-excel-page {
+  background: #f9fafb;
+
+  .upload-icon {
+    width: 16%;
+  }
+
+  .upload-box {
+    border-radius: 1rem;
+  }
+
+  .upload-area {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 1rem;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f1f5f9;
+    }
+  }
+
+  .btn-success {
+    background-color: #22c55e;
+    border: none;
+
+    &:hover {
+      background-color: #16a34a;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    .upload-box,
+    .upload-area,
+    .bg-white {
+      padding: 1rem !important;
+    }
+  }
+}
+
+
+// Add Manual Page Styling
+.add-manual-container {
+  .form-label {
+    font-weight: 500;
+  }
+
+  .form-control, .form-select {
+    padding: 0.65rem;
+    border-radius: 0.5rem;
+  }
+
+  .upload-area {
+    border: 2px dashed #ddd;
+    cursor: pointer;
+    background: #f9fafb;
+    transition: 0.2s;
+
+    &:hover {
+      background: #f0f0f0;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  }
+
+  button.btn-primary {
+    background-color: #3bbafc;
+    border: none;
+
+    &:hover {
+      background-color: #2b9fd6;
+    }
+  }
+}

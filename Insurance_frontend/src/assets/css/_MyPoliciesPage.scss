@@ -1,0 +1,319 @@
+.my-policies {
+  padding: 1rem;
+
+  .section{
+    background: #fff;
+    padding: 20px 30px;
+  }
+  .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+
+  .text-section {
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    p {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      color: #111827;
+      cursor: pointer;
+      transition: 0.2s;
+
+      &.active {
+        background: #22c55e;
+        border-color: #22c55e;
+        color: white;
+      }
+
+      i {
+        font-size: 14px;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+
+ .policies-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 2rem;
+
+  .policy-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1.2rem;
+    flex: 1 1 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: 0.3s;
+    border: 1px solid #38c172;
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+
+      .initial-badge {
+        background: #047857;
+        color: white;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .info {
+        flex: 1;
+        margin: 0 1rem;
+
+        .company {
+          font-weight: 600;
+          font-size: 16px;
+          color: #111827;
+        }
+
+        .scheme {
+          font-size: 13px;
+          color: #6b7280;
+        }
+      }
+
+      .status {
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 20px;
+        padding: 4px 10px;
+
+        &.active {
+          background: #dcfce7;
+          color: #16a34a;
+        }
+
+        &.renewed {
+          background: #fefce8;
+          color: #d97706;
+        }
+
+        &.lapsed {
+          background: #fee2e2;
+          color: #b91c1c;
+        }
+      }
+    }
+
+    .card-body {
+      font-size: 14px;
+      color: #374151;
+      margin-bottom: 1rem;
+
+      p {
+        margin: 4px 0;
+      }
+    }
+
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 1rem;
+
+      .amount-label {
+        color: #6b7280;
+      }
+
+      .amount {
+        color: #10b981;
+      }
+    }
+
+    .card-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+
+      .btn-outline {
+        flex: 1;
+        background: white;
+        border: 1px solid #22c55e;
+        color: #22c55e;
+        padding: 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover {
+          background: #f0fdf4;
+        }
+      }
+
+      .btn-filled {
+        flex: 1;
+        background: #38c172;
+        border: none;
+        color: #fff;
+        padding: 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover {
+          background: #198754;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+
+    .policy-card {
+      width: 100%;
+    }
+  }
+}
+
+  @media (max-width: 768px) {
+    .policies-container {
+      flex-direction: column;
+
+      .policy-card {
+        width: 100%;
+      }
+    }
+  }
+}
+
+
+
+
+
+  .filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 2rem;
+
+  .filter-title {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #374151;
+    margin-right: 10px;
+
+    i {
+      margin-right: 6px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+  }
+
+  .filter-select {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #111827;
+    cursor: pointer;
+    min-width: 140px;
+
+    &:hover {
+      border-color: #38c172;
+    }
+  }
+
+  .clear-btn {
+    margin-left: auto;
+    background: #f7fffb;
+    border: 1px solid #38c172;
+    color: #38c172;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 10px 38px;
+    border-radius: 5px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .clear-btn {
+      margin-left: 0;
+    }
+
+    .filter-select {
+      width: 100%;
+    }
+  }
+}
+
+
+.load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+
+  .load-btn {
+    background: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover {
+      background: #e5e7eb;
+    }
+  }
+}

@@ -1,0 +1,43 @@
+.main-content {
+  background: #f5f8ff;
+  min-height: 100vh;
+
+  h4 {
+    font-size: 1.4rem;
+  }
+
+  .form-label {
+    font-weight: 500;
+  }
+
+  .form-control,
+  .form-select,
+  textarea {
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .table {
+    th,
+    td {
+      vertical-align: middle;
+      font-size: 0.9rem;
+    }
+
+    th {
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+  }
+}
