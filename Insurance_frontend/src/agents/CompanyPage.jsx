@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
+import { useCategory } from "../context/CategoryContext";
 
 const CompanyPage = () => {
   const navigate = useNavigate();
@@ -11,7 +12,8 @@ const CompanyPage = () => {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("all"); //change d
+  //const [selectedCategory, setSelectedCategory] = useState("all"); //change d
+  const {selectedCategory} = useCategory();
 
 
   //changed
@@ -26,11 +28,12 @@ const CompanyPage = () => {
       try {
         const agent = user || JSON.parse(localStorage.getItem("user"));
         if (!agent?.id) {
+          
           console.warn("❌ Agent ID not found.");
           return;
         }
 
-        const res = await fetch(`http://localhost:5000/api/agent/${agent.id}`); //changed
+        const res = await fetch(`http://localhost:5000/api/Insurance-by-Category?insuranceType=${selectedCategory}&agentId=${agent.id}`); //changed
         const data = await res.json();
         console.log("📊 Fetched data:", data);
 
@@ -47,7 +50,7 @@ const CompanyPage = () => {
     };
 
     fetchCompanies();
-  }, [user]);
+  }, [user, selectedCategory]);
 
   // Group by company name
   const groupedCompanies = {};

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
+import { useCategory } from "../context/CategoryContext";
 
 const CustomerList = () => {
   const { user } = useAuth();
@@ -9,11 +10,12 @@ const CustomerList = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("All");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  //const [selectedCategory, setSelectedCategory] = useState("All"); //changed
   const [selectedType, setSelectedType] = useState("All");
   const [customers, setCustomers] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [selectedYear, setSelectedYear] = useState("All");
+  const {selectedCategory} = useCategory();
 
   const insuranceOptions = {
     "Life Insurance": ["Term", "Whole Life", "Endowment", "Money-Back", "ULIP", "Child", "Pension"],
@@ -31,7 +33,7 @@ const CustomerList = () => {
           return;
         }
 
-        const res = await fetch(`http://localhost:5000/api/agent/${agent.id}`);
+        const res = await fetch(`http://localhost:5000/api/Insurance-by-Category?insuranceType=${selectedCategory}&agentId=${agent.id}`);
         const data = await res.json();
 
         console.log("📥 API Raw Response:", data);
@@ -62,7 +64,7 @@ const CustomerList = () => {
     };
 
     fetchCustomers();
-  }, []);
+  }, [user, selectedCategory]);
 
   const companyOptions = ["All", ...new Set(customers.map((c) => c.company).filter(Boolean))];
 
