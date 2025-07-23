@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useCategory } from "../context/CategoryContext";
 import Sidebar from "../components/Sidebar";
 
 const AgentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  //const [selectedCategory, setSelectedCategory] = useState("");
   const [policies, setPolicies] = useState([]);
+  const { selectedCategory, switchCategory } = useCategory();  //added
+
   useEffect(() => {
     const stored = localStorage.getItem("selectedInsuranceType");
 
     if (stored === "General Insurance" || stored === "Life Insurance") {
-      setSelectedCategory(stored);
+      switchCategory(stored);               //changed from setSelectedCategory
     } else {
       // Default to Life Insurance
       localStorage.setItem("selectedInsuranceType", "Life Insurance");
-      setSelectedCategory("Life Insurance");
+      switchCategory("Life Insurance");    //changed from setSelectedCategory
     }
   }, []);
 
@@ -26,7 +29,7 @@ const AgentDashboard = () => {
 
   const handleSwitchCategory = (e) => {
     const newValue = e.target.value;
-    setSelectedCategory(newValue);
+    switchCategory(newValue);          // changed from setSelectedCategory
     localStorage.setItem("selectedInsuranceType", newValue);
     window.location.reload();
   };
