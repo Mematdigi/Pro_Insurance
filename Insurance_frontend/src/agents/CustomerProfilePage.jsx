@@ -18,19 +18,41 @@ const CustomerProfilePage = () => {
   const fetchCustomer = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/customer/${id}`);
-      if(!res.ok) {
-        throw new Error("Failed to fetch customer data");
-      }
-      const data = await res.json();
-       const formattedCustomer = {
-        name: data.customerName,
-        email: data.customerEmail,
-        contact: data.customerPhone,
-        address: data.customerAddress || "-",
-        dob: data.customerDOB || "-",
-        policies: [data], // Wrap the current policy into an array
-      };
-      setCustomer(formattedCustomer);
+if (!res.ok) {
+  throw new Error("Failed to fetch customer data");
+}
+const data = await res.json();
+
+// check data has required fields
+if (!data.agentId || !data.customerPhone || !data.customerEmail) {
+  console.error("Missing agentId / phone / email from backend:", data);
+  return;
+}
+
+const formatDate = d => d ? new Date(d).toLocaleDateString('en-GB') : "-";
+
+const formattedCustomer = {
+  name: data.customerName,
+  email: data.customerEmail,
+  contact: data.customerPhone,
+  address: data.customerAddress || "-",
+  dob: formatDate(data.customerDOB) || "-",
+  agentId: data.agentId,
+  policies: [data], // initially empty
+};
+console.log("formatcustomer", formattedCustomer);
+
+// now fetch policies
+const policyRes = await fetch(`http://localhost:5000/api/customer-policies/${data.agentId}/${data.customerPhone}/${data.customerEmail}`);
+if (!policyRes.ok) {
+  throw new Error("Failed to fetch policy data");
+}
+const policies = await policyRes.json();
+console.log("policyData", policies);
+
+// update formattedCustomer with real policies
+formattedCustomer.policies = Array.isArray(policies) ? policies : [];
+setCustomer(formattedCustomer);
     } catch (err) {
       console.error("❌ Error fetching customer data:", err);
     }
@@ -40,18 +62,16 @@ const CustomerProfilePage = () => {
   }
   }, [id])
 
-
-
   if (!customer) return <div className="container py-4">Loading...</div>;
 
   const totalPremium = customer.policies.reduce(
-    (sum, policy) => sum + Number(policy.premium || 0),
+    (sum, policy) => sum + Number(policy.policyDetails.premium || 0),
     0
   );
 
   const nextDue = customer.policies.reduce((latest, policy) => {
-    const due = new Date(policy.dueDate);
-    return !latest || due < new Date(latest) ? policy.dueDate : latest;
+    const due = new Date(policy.policyDetails.endDate);
+    return !latest || due < new Date(latest) ? policy.policyDetails.endDate : latest;
   }, null);
 
   const handleEditChange = (e) => {
@@ -105,7 +125,7 @@ const CustomerProfilePage = () => {
       </div>
 
       <ul className="nav custom-tabs p-1 mb-4 rounded bg-light-subtle">
-        {["overview", "policies", "history", "documents"].map((tab) => (
+        {["overview"].map((tab) => (
           <li className="nav-item" key={tab}>
             <button
               className={`nav-link px-4 py-2 rounded ${activeTab === tab ? "active" : ""}`}
@@ -154,12 +174,12 @@ const CustomerProfilePage = () => {
                   <div className="d-flex justify-content-between">
                     <div>
                       <strong>{p.type}</strong>
-                      <p className="mb-0 small">{p.schemeName || ""}</p>
-                      <p className="mb-0 small">{p.startDate} - {p.dueDate}</p>
+                      <p className="mb-0 small">{p.policyType || ""}</p>
+                      <p className="mb-0 small">{p.policyDetails.startDate} - {p.policyDetails.endDate}</p>
                     </div>
                     <div className="text-end">
                       <span className="badge bg-success-subtle text-success mb-1">active</span>
-                      <div className="fw-semibold text-success">₹{p.premium}</div>
+                      <div className="fw-semibold text-success">₹{p.policyDetails.premium}</div>
                     </div>
                   </div>
                 </div>
@@ -183,7 +203,7 @@ const CustomerProfilePage = () => {
                 <div className="fw-bold fs-5 text-danger">
                   {
                     customer.policies.filter(p => {
-                      const due = new Date(p.dueDate);
+                      const due = new Date(p.policyDetails.endDate);
                       const now = new Date();
                       const diff = (due - now) / (1000 * 3600 * 24);
                       return diff >= 0 && diff <= 7;
