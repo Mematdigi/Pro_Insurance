@@ -17,7 +17,6 @@ const getPoliciesByAgent = async (req, res) => {
 const getInsuranceByCategory = async(req,res)=>{
     const insuranceType  = req.query.insuranceType
     const agentId = req.query.agentId
-    console.log(insuranceType)
   try {
   const policies = await Policy.find({
     insuranceType: insuranceType,
@@ -39,12 +38,12 @@ const getCoustomerPolicyList = async(req,res) => {
         const  customerPhone = req.params.customerPhone
         const customerEmail = req.params.customerEmail
       try {
-      const policies = await Policy.find({
+      const policyList = await Policy.find({
         agentId:agentObjectId,
         customerPhone: customerPhone,
         customerEmail: customerEmail
       });
-        res.status(200).json(policies);
+        res.status(200).json(policyList);
       } catch (err) {
         console.error("Error fetching agent policies:", err);
         res.status(500).json({ msg: "Internal Server Error" });
