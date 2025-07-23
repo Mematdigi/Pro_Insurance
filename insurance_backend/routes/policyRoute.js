@@ -1,47 +1,41 @@
 const express = require('express');
 const router = express.Router();
-const Policy = require('../models/Policy'); // Assuming you have a Policy model defined
-
-const fetchAgentPolicies = require('../controllers/fetchAgentPoliciesController'); // Assuming this is for agents to fetch policies
-const { getPoliciesByAgent,getInsuranceByCategory } = require('../controllers/policyController');
-//         <div className="step step-1">
+const Policy = require('../models/Policy');
+const fetchAgentPolicies = require('../controllers/fetchAgentPoliciesController');
+const { getPoliciesByAgent, getInsuranceByCategory,getCoustomerPolicyList} = require('../controllers/policyController');
 const addPolicy = require('../controllers/addPolicyController');
 const getPolicies = require('../controllers/getUserPoliciesController');
 
 const upload = require("../middleware/upload");
 const uploadExcelController = require("../controllers/uploadExcelController");
 
-router.post(
-  "/agent/upload-excel",
-  upload.single("file"),
-  uploadExcelController
-);
+router.post("/agent/upload-excel",upload.single("file"),uploadExcelController);
 const manualPolicyController = require('../controllers/manualPolicyController');
+const { get } = require('mongoose');
 
 router.post("/agent/manual-policy", manualPolicyController);
 
 router.get("/policies", async (req, res) => {
   try {
-    const { company, agentId} = req.query;
+    const { company, agentId } = req.query;
 
     if (!company || !agentId) {
       return res.status(400).json({ error: "Company and agent name is required." });
     }
 
     const filter = {
-      company:{ $regex:new RegExp(`^${company.trim()}$`, "i") }, // case-insensitive exact match
+      company: { $regex: new RegExp(`^${company.trim()}$`, "i") }, // case-insensitive exact match
       agentId: agentId, // Assuming agentId is passed in the query
     };
 
     const policies = await Policy.find(filter);
 
-    res.json({policies});
+    res.json({ policies });
   } catch (error) {
     console.error("❌ Failed to fetch policies by company:", error);
     res.status(500).json({ error: "Server error while fetching policies." });
   }
 });
-
 
 router.get('/due', async (req, res) => {
   try {
@@ -51,7 +45,7 @@ router.get('/due', async (req, res) => {
       return res.status(400).json({ message: 'Agent ID is required' });
     }
 
-    const policies = await Policy.find({agentId});
+    const policies = await Policy.find({ agentId });
 
     const dueList = policies.map((p) => ({
       name: p.customerName || 'Unknown',
@@ -83,15 +77,15 @@ router.get("/customer/:id", async (req, res) => {
 
 //----------------------------------------------
 
- //-----------------------------------------------
-
-
-
-
+//-----------------------------------------------
 router.post('/add-policy', addPolicy);
 router.get('/my-policies', getPolicies);
-router.post('/agent/agent-policies', fetchAgentPolicies); // Assuming this is for agents to fetch policies
+//route for agent to fetch policies
+router.post('/agent/agent-policies', fetchAgentPolicies);
 router.get('/agent/:agentId', getPoliciesByAgent);// Assuming this is for agents to fetch policies
-router.get('/Insurance-by-Category',getInsuranceByCategory)// For agent to fetch insurance by category
+//fetch insurance by category
+router.get('/Insurance-by-Category', getInsuranceByCategory)
+//fetch total policy of the customer
+router.get('/customer-policies/:agentId/:customerPhone/:customerEmail', getCoustomerPolicyList);
 
 module.exports = router;

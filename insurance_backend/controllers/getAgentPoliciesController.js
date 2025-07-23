@@ -53,4 +53,9 @@ const getAgentPolicies = async (req, res) => {
   }
 };
 
-module.exports = getAgentPolicies;
+//get coustmer policies by agent
+
+
+
+
+module.exports = {getAgentPolicies};
