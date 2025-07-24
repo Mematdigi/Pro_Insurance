@@ -7,52 +7,8 @@ const FamilyHistory = () => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  const familyMembers = [
-    {
-      name: "Rajesh Kumar",
-      relation: "Son",
-      plan: "Endowment Plan",
-      status: "Active",
-      due: "₹15,000",
-      maturity: "₹12,00,000",
-      loan: "₹3,00,000",
-      premiumSchedule: [
-        { date: "10/07/2025", policyNo: "LIC12345678", amount: "₹15,000", status: "Pending" },
-        { date: "25/07/2025", policyNo: "LIC12345678", amount: "₹10,000", status: "Pending" },
-      ],
-    },
-    {
-      name: "Anita Kumari",
-      relation: "Wife",
-      plan: "Term Plan",
-      status: "Active",
-      due: "₹7,500",
-      maturity: "₹5,00,000",
-      loan: "₹1,00,000",
-      premiumSchedule: [],
-    },
-    {
-      name: "Rahul Kumar",
-      relation: "Father",
-      plan: "ULIP Plan",
-      status: "Active",
-      due: "₹12,000",
-      maturity: "₹8,50,000",
-      loan: "₹2,50,000",
-      premiumSchedule: [],
-    },
-    {
-      name: "Priya Sharma",
-      relation: "Daughter",
-      plan: "Money Back Plan",
-      status: "Active",
-      due: "₹18,500",
-      maturity: "₹15,00,000",
-      loan: "₹4,00,000",
-      premiumSchedule: [],
-    },
-  ];
-
+  const familyMembers = [];
+    
   const selected = familyMembers.find(m => m.name === selectedMember);
 
   return (

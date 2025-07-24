@@ -9,7 +9,7 @@ require('./jobs/notificationScheduler')
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:5174', // Adjust this to your frontend URL
+  origin: 'http://localhost:5173', // Adjust this to your frontend URL
   credentials: true // Allow credentials (cookies, authorization headers, etc.)
 }));
 
