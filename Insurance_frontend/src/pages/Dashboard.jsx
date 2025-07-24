@@ -35,8 +35,8 @@ const sampleData = {
       due: '05 Jan 2026',
     },
     {
-      name: 'Ravi Kumar',
-      type: 'Car Insurance',
+      name: 'Suraj Kumar',
+      type: 'Health Insurance',
       details: 'Sed ut perspiciatis unde omnis iste',
       premium: '50,000',
       due: '12 Dec 2025',
@@ -51,8 +51,8 @@ const sampleData = {
       due: '19 Aug 2025',
     },
     {
-      name: 'Ravi Kumar',
-      type: 'Car Insurance',
+      name: 'Vikas Singh',
+      type: 'Accident Cover',
       details: 'Sed ut perspiciatis unde omnis iste',
       premium: '50,000',
       due: '12 Dec 2025',
@@ -67,8 +67,8 @@ const sampleData = {
       due: '30 Mar 2026',
     },
     {
-      name: 'Ravi Kumar',
-      type: 'Car Insurance',
+      name: 'Rishabh Garg',
+      type: 'Home Insurance',
       details: 'Sed ut perspiciatis unde omnis iste',
       premium: '50,000',
       due: '12 Dec 2025',
@@ -89,7 +89,7 @@ const Dashboard = () => {
         {/* Header */}
         <div className="d-flex justify-content-between align-items-start flex-wrap">
           <div>
-            <h2 className="fw-bold text-primary">Hello User</h2>
+            <h2 className="fw-bold h_Dark">Hello User</h2>
             <p className="text-muted">Welcome to the Dashboard</p>
           </div>
           <div className="user-profile-card bg-white p-3 rounded-4 d-flex align-items-center gap-3 shadow-sm">
@@ -116,19 +116,24 @@ const Dashboard = () => {
 
 
         {/* Insurance Cards */}
-        <div className="row mt-4">
-          {sampleData[activeTab]?.map((item, idx) => (
-            <div className="col-md-4 mb-3" key={idx}>
-              <div className="policy-card p-4 rounded-4 bg-white border shadow-sm">
-                <h6 className="fw-bold text-primary">{item.name}</h6>
-                <div className="text-dark fw-semibold">{item.type}</div>
-                <div className="text-muted small mb-3">{item.details}</div>
-                <div><strong>Premium:</strong> <span className="ms-2">{item.premium}</span></div>
-                <div><strong>Premium Due:</strong> <span className="ms-2">{item.due}</span></div>
-              </div>
-            </div>
-          ))}
-        </div>
+       <div className="row mt-4">
+  {sampleData[activeTab]?.map((item, idx) => (
+    <div className="col-md-4 mb-3" key={idx}>
+      <div className="policy-card-modern rounded-4">
+  <div className="card-top d-flex align-items-center justify-content-center">
+    <h4 className="card-top-name mb-0">{item.name}</h4>
+  </div>
+  <div className="card-bottom p-3">
+    <div className="text-dark fw-semibold">{item.type}</div>
+    <div className="text-muted small mb-2">{item.details}</div>
+    <div><strong>Premium:</strong> <span className="ms-1">{item.premium}</span></div>
+    <div><strong>Premium Due:</strong> <span className="ms-1">{item.due}</span></div>
+  </div>
+</div>
+
+    </div>
+  ))}
+</div>
 
         {/* Quick Actions */}
         <div className="quick-actions-box bg-white p-4 rounded-4 shadow-sm mt-4">
@@ -137,19 +142,19 @@ const Dashboard = () => {
             <div className="col-md-3 col-6">
               <div className="action-card bg-success-subtle text-center p-3 rounded-3 h-100">
                 <FaUserPlus size={24} className="text-success mb-2" />
-                <div className="fw-semibold text-dark">Add Customer</div>
+                <div className="fw-semibold text-dark">Add Policy</div>
               </div>
             </div>
             <div className="col-md-3 col-6">
               <div className="action-card bg-primary-subtle text-center p-3 rounded-3 h-100">
                 <BsShieldCheck size={24} className="text-primary mb-2" />
-                <div className="fw-semibold text-dark">Assign Policy</div>
+                <div className="fw-semibold text-dark">View Policy</div>
               </div>
             </div>
             <div className="col-md-3 col-6">
               <div className="action-card bg-success-subtle text-center p-3 rounded-3 h-100">
                 <MdOutlineNotificationsActive size={24} className="text-success mb-2" />
-                <div className="fw-semibold text-dark">Send Reminder</div>
+                <div className="fw-semibold text-dark">Notifications</div>
               </div>
             </div>
             <div className="col-md-3 col-6">

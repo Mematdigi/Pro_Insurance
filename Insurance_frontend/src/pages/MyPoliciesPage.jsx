@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
-
 
 const MyPoliciesPage = () => {
   const [view, setView] = useState('grid');
@@ -14,6 +12,7 @@ const MyPoliciesPage = () => {
       scheme: 'Click 2 Protect Life',
       amount: '₹50,000',
       status: 'Active',
+      type: 'Life',
       term: '5 Years',
       startDate: '01 Jan 2023',
       endDate: '01 Jan 2028',
@@ -27,6 +26,7 @@ const MyPoliciesPage = () => {
       scheme: 'iProtect Smart',
       amount: '₹75,000',
       status: 'Renewed',
+      type: 'Term',
       term: '10 Years',
       startDate: '15 Mar 2022',
       endDate: '15 Mar 2032',
@@ -40,6 +40,7 @@ const MyPoliciesPage = () => {
       scheme: 'Jeevan Anand',
       amount: '₹30,000',
       status: 'Lapsed',
+      type: 'Life',
       term: '5 Years',
       startDate: '10 Apr 2020',
       endDate: '10 Apr 2025',
@@ -53,6 +54,7 @@ const MyPoliciesPage = () => {
       scheme: 'Life Goal Assure',
       amount: '₹60,000',
       status: 'Active',
+      type: 'Health',
       term: '15 Years',
       startDate: '05 Dec 2023',
       endDate: '05 Dec 2038',
@@ -64,146 +66,128 @@ const MyPoliciesPage = () => {
   ];
 
   const [filters, setFilters] = useState({
-  company: '',
-  status: '',
-  year: '',
-  type: ''
-});
-
-const handleFilterChange = (key, value) => {
-  setFilters(prev => ({ ...prev, [key]: value }));
-};
-
-const clearFilters = () => {
-  setFilters({
     company: '',
     status: '',
     year: '',
     type: ''
   });
-};
 
-// Use filteredPolicies in place of `policies.map(...)`
-const filteredPolicies = policies.filter(p => {
-  return (!filters.company || p.company === filters.company) &&
-         (!filters.status || p.status === filters.status) &&
-         (!filters.year || p.startDate.includes(filters.year)) &&
-         (!filters.type || p.type === filters.type); // Add "type" to your policy object
-});
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
+  const clearFilters = () => {
+    setFilters({
+      company: '',
+      status: '',
+      year: '',
+      type: ''
+    });
+  };
+
+  // ✅ Filtering logic fixed
+  const filteredPolicies = policies.filter(p => {
+    return (!filters.company || p.company === filters.company) &&
+      (!filters.status || p.status === filters.status) &&
+      (!filters.year || p.startDate.includes(filters.year)) &&
+      (!filters.type || p.type === filters.type);
+  });
 
   return (
-    <>
-        
+    <div className="dashboard-layout">
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
-        <div className="dashboard-layout">
-              <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-        
-              <div className="main-content">
-                    <Header toggleSidebar={toggleSidebar} />
-                    <div className="my-policies">
-  <div className="header d-flex justify-content-between align-items-start flex-wrap">
-    <div className="text-section">
-      <h2>My Policies</h2>
-      <p>Manage and track all your insurance policies in one place</p>
-    </div>
-    <div className="controls d-flex">
-      <button className={`view-toggle ${view === 'grid' ? 'active' : ''}`} onClick={() => setView('grid')}>
-        <i className="fas fa-th-large me-1"></i> Grid
-      </button>
-      <button className={`view-toggle ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>
-        <i className="fas fa-list me-1"></i> List
-      </button>
-    </div>
-  </div>
+      <div className="main-content">
+        <div className="my-policies">
+          <div className="d-flex justify-content-between align-items-start flex-wrap">
+            <div className="text-section">
+              <h2>My Policies</h2>
+              <p>Manage and track all your insurance policies in one place</p>
+            </div>
+          </div>
 
-    <div className="section">
-
-        <div className="filter-bar">
-            <div className="filter-title">
+          <div className="section">
+            {/* ✅ Filter Section */}
+            <div className="filter-bar">
+              <div className="filter-title">
                 <i className="fas fa-filter"></i>
                 <span>Filters</span>
-            </div>
+              </div>
 
-            <select className="filter-select" onChange={(e) => handleFilterChange('company', e.target.value)}>
+              <select className="filter-select" onChange={(e) => handleFilterChange('company', e.target.value)}>
                 <option value="">Company</option>
                 <option>HDFC Life</option>
                 <option>ICICI Prudential</option>
                 <option>LIC India</option>
                 <option>Bajaj Allianz</option>
-            </select>
+              </select>
 
-            <select className="filter-select" onChange={(e) => handleFilterChange('status', e.target.value)}>
+              <select className="filter-select" onChange={(e) => handleFilterChange('status', e.target.value)}>
                 <option value="">Status</option>
                 <option>Active</option>
                 <option>Lapsed</option>
                 <option>Renewed</option>
-            </select>
+              </select>
 
-            <select className="filter-select" onChange={(e) => handleFilterChange('year', e.target.value)}>
+              <select className="filter-select" onChange={(e) => handleFilterChange('year', e.target.value)}>
                 <option value="">Select Year</option>
                 {Array.from({ length: 10 }, (_, i) => {
-                const year = new Date().getFullYear() - i;
-                return <option key={year} value={year}>{year}</option>
+                  const year = new Date().getFullYear() - i;
+                  return <option key={year} value={year}>{year}</option>
                 })}
-            </select>
+              </select>
 
-            <select className="filter-select" onChange={(e) => handleFilterChange('type', e.target.value)}>
+              <select className="filter-select" onChange={(e) => handleFilterChange('type', e.target.value)}>
                 <option value="">Insurance Type</option>
                 <option>Health</option>
                 <option>Life</option>
                 <option>Term</option>
                 <option>Vehicle</option>
-            </select>
+              </select>
 
-            <button className="clear-btn" onClick={clearFilters}>Clear All</button>
+              <button className="clear-btn" onClick={clearFilters}>Clear All</button>
+            </div>
+
+            {/* ✅ Grid-based cards section */}
+            <div className={`policies-container ${view}`}>
+              {filteredPolicies.length === 0 ? (
+                <p className="text-muted">No policies found matching your filters.</p>
+              ) : (
+                filteredPolicies.map((p, i) => (
+                  <div className="policy-card" key={i}>
+                    <div className="card-top">
+                      <div className="initial-badge">{p.initials}</div>
+                      <div className="info">
+                        <strong className="company">{p.company}</strong>
+                        <p className="scheme">{p.scheme}</p>
+                      </div>
+                      <span className={`status ${p.status.toLowerCase()}`}>{p.status}</span>
+                    </div>
+
+                    <div className="card-body">
+                      <p><strong>Policy Term:</strong> {p.term}</p>
+                      <p><strong>Policy Period:</strong> {p.startDate} – {p.endDate}</p>
+                      <p><strong>Next Due Date:</strong> {p.nextDue}</p>
+                      <p><strong>Total Premium Paid:</strong> {p.totalPaid}</p>
+                    </div>
+
+                    <div className="card-bottom">
+                      <div className="amount-label">Premium</div>
+                      <div className="amount">{p.amount}</div>
+                    </div>
+
+                    <div className="card-actions">
+                      <button className="btn-outline">View Details</button>
+                      <button className="btn-filled">Pay Now</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
-
-    <div className={`policies-container ${view}`}>
-  {policies.map((p, i) => (
-    <div className="policy-card" key={i}>
-      <div className="card-top">
-        <div className="initial-badge">{p.initials}</div>
-        <div className="info">
-          <strong className="company">{p.company}</strong>
-          <p className="scheme">{p.scheme}</p>
-        </div>
-        <span className={`status ${p.status.toLowerCase()}`}>{p.status}</span>
-      </div>
-
-      <div className="card-body">
-        <p><strong>Policy Term:</strong> {p.term}</p>
-        <p><strong>Policy Period:</strong> {p.startDate} – {p.endDate}</p>
-        <p><strong>Next Due Date:</strong> {p.nextDue}</p>
-        <p><strong>Total Premium Paid:</strong> {p.totalPaid}</p>
-      </div>
-
-      <div className="card-bottom">
-        <div className="amount-label">Premium</div>
-        <div className="amount">{p.amount}</div>
-      </div>
-
-      <div className="card-actions">
-        <button className="btn-outline">View Details</button>
-        <button className="btn-filled">Pay Now</button>
       </div>
     </div>
-  ))}
-</div>
-
-
-    <div className="load-more">
-        <button className="load-btn">Load More Policies</button>
-    </div>
-    </div>
-
-</div>
-
-              </div>
-        </div>
-    </>
-
-
   );
 };
 
