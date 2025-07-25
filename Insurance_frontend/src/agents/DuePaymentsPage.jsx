@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
-import { useAuth } from "../context/AuthContext";
 
 const DuePaymentsPage = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
   const [allCustomers, setAllCustomers] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [filters, setFilters] = useState({
@@ -11,29 +12,28 @@ const DuePaymentsPage = () => {
     company: "",
     type: "",
   });
-  const { user } = useAuth();
   const [modalData, setModalData] = useState(null);
 
   useEffect(() => {
-  const fetchDuePayments = async () => {
-    const agent = user || JSON.parse(localStorage.getItem("user"));
-    const agentId = agent?.id;
-    try {
-      const res = await fetch(`http://localhost:5000/api/due?agentId=${agentId}`);
-      const data = await res.json();
-      setAllCustomers(data);
-      setFiltered(data);
+    const customers = JSON.parse(localStorage.getItem("manualCustomers")) || [];
+    const dueList = [];
 
-      // Flatten policies into customer-level due data
-      
-    } catch (error) {
-      console.error("Failed to fetch due payments:", error);
-    }
-  };
+    customers.forEach((cust) => {
+      cust.policies?.forEach((p) => {
+        dueList.push({
+          name: cust.name,
+          company: cust.company,
+          contact: cust.contact,
+          type: p.type,
+          premium: p.premium,
+          dueDate: p.dueDate,
+        });
+      });
+    });
 
-  fetchDuePayments();
-}, []);
-
+    setAllCustomers(dueList);
+    setFiltered(dueList);
+  }, []);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -63,10 +63,9 @@ const DuePaymentsPage = () => {
   };
 
   return (
-    <div className="d-flex">
-      <Sidebar />
-      <div className="flex-grow-1">
-        <Header />
+    <div className="dashboard-layout d-flex">
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className=" main-content flex-grow-1">
         <div className="due-page-container p-3">
           <h2 className="title">Due Payments</h2>
           <p className="subtitle">Manage customer due payments and track import data efficiently</p>
@@ -108,13 +107,9 @@ const DuePaymentsPage = () => {
               </div>
             </div>
 
-            {/* <div className="row-info">
-              📅 {filtered.length} customers with due payments
-            </div> */}
-
             <div className="table-section mt-5">
               <div className="table-header d-flex justify-content-between align-items-center flex-wrap mb-3">
-                <h5 className="fw-bold text-primary mb-2">📊 Due Payments Overview</h5>
+                <h5 className="fw-bold text-dark mb-2"> Due Payments Overview</h5>
                 <button className="btn btn-primary">
                   <i className="bi bi-download"></i> Download Report
                 </button>
@@ -144,7 +139,7 @@ const DuePaymentsPage = () => {
                           <td className="text-primary fw-semibold">₹{parseFloat(cust.premium).toLocaleString()}</td>
                           <td>{cust.dueDate}</td>
                           <td>
-                            <span className={`badge rounded-pill bg-${status === "Overdue" ? "danger" : "warning"} text-dark`}>
+                            <span className={`badge rounded-pill bg-${status === "Overdue" ? "danger" : "warning"} text-light`}>
                               {status}
                             </span>
                           </td>
@@ -197,12 +192,13 @@ const DuePaymentsPage = () => {
                   <textarea readOnly rows={6}>{generateMessage(modalData)}</textarea>
                   <div className="modal-actions">
                     <button onClick={() => setModalData(null)} className="cancel">Cancel</button>
-                    <button className="send">📲 Send WhatsApp Reminder</button>
+                    <button className="send"> Send WhatsApp Reminder</button>
                   </div>
                 </div>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>

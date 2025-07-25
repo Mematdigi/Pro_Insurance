@@ -88,7 +88,7 @@ const Sidebar = () => {
 
   const customerMenu = [
     { label: "Dashboard", path: "/customer/dashboard", icon: faTachometerAlt },
-    { label: "Add Polices", path: "/customer/rewards", icon: faDownload },
+    { label: "Add Polices", path: "/customer/addinsurance", icon: faDownload },
     { label: "Policies", path: "/customer/mypolicies", icon: faShieldAlt },
     { label: "Due Payments", path: "/customer/due-payments", icon: faFileInvoiceDollar },
     { label: "Logout", path: "/login", icon: faSignOutAlt },

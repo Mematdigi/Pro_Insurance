@@ -44,7 +44,8 @@ function App() {
         {/* Customer Routes */}
         <Route path="/customer/dashboard" element={<Dashboard />} />
         <Route path="/customer/mypolicies" element={<MyPoliciesPage />} />
-        <Route path="/add-insurance" element={<AddInsurancePage />} />
+        <Route path="customer/addinsurance" element={<AddInsurancePage />} />
+
 
         {/* Agent Routes */}
         <Route path="/agent/company-selection" element={<CompanySelection />} />

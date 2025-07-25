@@ -1,134 +1,166 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
-import { useAuth } from "../context/AuthContext";
-import slider1 from "/public/slider1.png";
-import slider2 from "/public/slider2.png";
-import slider3 from "/public/slider3.png";
+import React, { useState } from 'react';
+import Sidebar from '../components/Sidebar';
+import { useAuth } from '../context/AuthContext';
+import { FaUserPlus } from 'react-icons/fa';
+import { BsShieldCheck, BsGift } from 'react-icons/bs';
+import { MdOutlineNotificationsActive } from 'react-icons/md';
+
+const categories = ['Motor', 'Health', 'Personal Accident', 'Home', 'Travel', 'Life Insurance'];
+
+const sampleData = {
+  Motor: [
+    {
+      name: 'Monu Kumar',
+      type: 'Car Insurance',
+      details: 'Sed ut perspiciatis unde omnis iste',
+      premium: '50,000',
+      due: '12 Dec 2025',
+    },
+
+    {
+      name: 'Kavita Singh',
+      type: 'Car Insurance',
+      details: 'Sed ut perspiciatis unde omnis iste',
+      premium: '50,000',
+      due: '12 Dec 2025',
+    },
+    
+  ],
+  Health: [
+    {
+      name: 'Ravi Sharma',
+      type: 'Health Insurance',
+      details: 'Complete health protection plan',
+      premium: '30,000',
+      due: '05 Jan 2026',
+    },
+    {
+      name: 'Suraj Kumar',
+      type: 'Health Insurance',
+      details: 'Sed ut perspiciatis unde omnis iste',
+      premium: '50,000',
+      due: '12 Dec 2025',
+    },
+  ],
+  'Personal Accident': [
+    {
+      name: 'Anjali Mehta',
+      type: 'Accident Cover',
+      details: 'Accidental injury support plan',
+      premium: '20,000',
+      due: '19 Aug 2025',
+    },
+    {
+      name: 'Vikas Singh',
+      type: 'Accident Cover',
+      details: 'Sed ut perspiciatis unde omnis iste',
+      premium: '50,000',
+      due: '12 Dec 2025',
+    },
+  ],
+  Home: [
+    {
+      name: 'Rohan Gupta',
+      type: 'Home Insurance',
+      details: 'Coverage for natural disasters',
+      premium: '60,000',
+      due: '30 Mar 2026',
+    },
+    {
+      name: 'Rishabh Garg',
+      type: 'Home Insurance',
+      details: 'Sed ut perspiciatis unde omnis iste',
+      premium: '50,000',
+      due: '12 Dec 2025',
+    },
+  ],
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [slideIndex, setSlideIndex] = useState(0);
-
-  const sliders = [slider1, slider2, slider3];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSlideIndex((prev) => (prev + 1) % sliders.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
+  const [activeTab, setActiveTab] = useState('Motor');
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-
-
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout d-flex">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      {sidebarOpen && <div className="overlay" onClick={toggleSidebar}></div>}
+      <div className="main-content p-4">
+        {/* Header */}
+        <div className="d-flex justify-content-between align-items-start flex-wrap">
+          <div>
+            <h2 className="fw-bold h_Dark">Hello User</h2>
+            <p className="text-muted">Welcome to the Dashboard</p>
+          </div>
+          <div className="user-profile-card bg-white p-3 rounded-4 d-flex align-items-center gap-3 shadow-sm">
+            <img src="https://i.pravatar.cc/50" className="rounded-circle" alt="user" />
+            <div>
+              <div className="fw-bold text-capitalize">monu kumar</div>
+              <div className="text-muted small">Premium Customer</div>
+            </div>
+          </div>
+        </div>
 
-      <div className="main-content">
-        <Header toggleSidebar={toggleSidebar} />
-        <div className="page-body">
-          <div className="dashboard-widgets">
-            <div className="left">
-              <div className="insurance-slider">
-                <img src={sliders[slideIndex]} alt="insurance-slide" />
+        {/* Tabs */}
+       <div className="tab-bar d-flex gap-4 mt-4">
+  {categories.map((cat) => (
+    <div
+      key={cat}
+      className={`tab-item ${activeTab === cat ? 'active' : ''}`}
+      onClick={() => setActiveTab(cat)}
+    >
+      {cat}
+    </div>
+  ))}
+</div>
+
+
+        {/* Insurance Cards */}
+       <div className="row mt-4">
+  {sampleData[activeTab]?.map((item, idx) => (
+    <div className="col-md-4 mb-3" key={idx}>
+      <div className="policy-card-modern rounded-4">
+  <div className="card-top d-flex align-items-center justify-content-center">
+    <h4 className="card-top-name mb-0">{item.name}</h4>
+  </div>
+  <div className="card-bottom p-3">
+    <div className="text-dark fw-semibold">{item.type}</div>
+    <div className="text-muted small mb-2">{item.details}</div>
+    <div><strong>Premium:</strong> <span className="ms-1">{item.premium}</span></div>
+    <div><strong>Premium Due:</strong> <span className="ms-1">{item.due}</span></div>
+  </div>
+</div>
+
+    </div>
+  ))}
+</div>
+
+        {/* Quick Actions */}
+        <div className="quick-actions-box bg-white p-4 rounded-4 shadow-sm mt-4">
+          <h5 className="fw-bold mb-4">Quick Actions</h5>
+          <div className="row g-3">
+            <div className="col-md-3 col-6">
+              <div className="action-card bg-success-subtle text-center p-3 rounded-3 h-100">
+                <FaUserPlus size={24} className="text-success mb-2" />
+                <div className="fw-semibold text-dark">Add Policy</div>
               </div>
-
-             {/* === All Insurance Policies Section === */}
-              {/* === All Insurance Policies Section === */}
-                <div className="insurance-header d-flex justify-content-between align-items-center mb-4 mt-4">
-                  <h4 className="section-title">All Your Insurance Policies</h4>
-                  <button className="btn add-policy-btn" onClick={() => navigate("/add-insurance")}>
-                      ＋ Add Existing Insurance
-                    </button>
-                </div>
-
-                <div className="row insurance-policy-cards">
-                  {[
-                    {
-                      title: "Jeevan Anand",
-                      company: "LIC",
-                      policyNumber: "LIC123456789",
-                      sumAssured: "₹5,00,000",
-                      premiumDue: "15 Jul 2024",
-                      tag: "Endowment",
-                      tagColor: "success",
-                    },
-                  
-                    {
-                      title: "Smart Health Insurance",
-                      company: "ICICI Lombard",
-                      policyNumber: "ICICI55566777",
-                      sumAssured: "₹3,00,000",
-                      premiumDue: "20 Aug 2024",
-                      tag: "Health",
-                      tagColor: "danger",
-                    },
-                  ].map((item, idx) => (
-                    <div className="col-md-6 col-sm-6 col-12 mb-4" key={idx}>
-                      <div className="insurance-card shadow-sm p-3 h-100 rounded-3">
-                        <div className="d-flex justify-content-between align-items-start mb-2">
-                          <h5 className="mb-0 fw-semibold">{item.title}</h5>
-                          <span className={`badge bg-${item.tagColor} bg-opacity-10 text-${item.tagColor} px-3 py-1 rounded-pill`}>
-                            {item.tag}
-                          </span>
-                        </div>
-                        <p className="mb-1 text-muted">{item.company}</p>
-                        <div className="d-flex justify-content-between small mb-3">
-                          <div>
-                            <div className="text-muted">Policy Number</div>
-                            <div className="fw-bold">{item.policyNumber}</div>
-                          </div>
-                          <div>
-                            <div className="text-muted">$ Sum Assured</div>
-                            <div className="fw-bold">{item.sumAssured}</div>
-                          </div>
-                        </div>
-                        <div className="premium-box bg-light d-flex align-items-center p-2 rounded-2 mb-3">
-                          <i className="bi bi-calendar3 me-2"></i>
-                          <span className="fw-semibold me-2">Premium Due</span>
-                          <span className="text-muted small">{item.premiumDue}</span>
-                        </div>
-                        <div className="d-flex justify-content-between align-items-center gap-2">
-                          <button className="btn btn-outline-secondary btn-sm w-100">
-                            <i className="bi bi-eye me-1"></i> View
-                          </button>
-                          <button className="btn btn-outline-secondary btn-sm w-100">
-                            <i className="bi bi-pencil me-1"></i> Edit
-                          </button>
-                          <button className="btn btn-outline-secondary btn-sm w-100">
-                            <i className="bi bi-trash me-1"></i> 
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-
-
-             
-                  </div>
-              {/* ...Keep rest of the code here as you already have it... */}
-              <div className="right">
-              <div className="due-box">
-                <h4>Next Upcoming Event</h4>
-                <img
-                  src="/public/upcoming_ads.jpg"
-                  alt="event"
-                  style={{ width: "100%", borderRadius: "8px", marginBottom: "10px" }}
-                />
-                <p>🎉 Insurance Festival – 12-16 Dec</p>
-                <p>📦 Free claim consultation</p>
-                <button className="quick-action-btn" style={{ marginTop: "10px" }}>
-                  View Event Calendar
-                </button>
+            </div>
+            <div className="col-md-3 col-6">
+              <div className="action-card bg-primary-subtle text-center p-3 rounded-3 h-100">
+                <BsShieldCheck size={24} className="text-primary mb-2" />
+                <div className="fw-semibold text-dark">View Policy</div>
+              </div>
+            </div>
+            <div className="col-md-3 col-6">
+              <div className="action-card bg-success-subtle text-center p-3 rounded-3 h-100">
+                <MdOutlineNotificationsActive size={24} className="text-success mb-2" />
+                <div className="fw-semibold text-dark">Notifications</div>
+              </div>
+            </div>
+            <div className="col-md-3 col-6">
+              <div className="action-card bg-primary-subtle text-center p-3 rounded-3 h-100">
+                <BsGift size={24} className="text-primary mb-2" />
+                <div className="fw-semibold text-dark">View Rewards</div>
               </div>
             </div>
           </div>
