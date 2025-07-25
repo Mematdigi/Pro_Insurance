@@ -1,54 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const Policy = require('../models/Policy');
+const Policy = require('../../models/Policy');
 const dayjs = require('dayjs');
+const { notificationController } = require("../../controllers/index");
 
-router.get("/send", async (req, res) => {
-  try{
-    
-  const now = new Date();
-  const nextMonth = now.getMonth()+1;
-
-  const duePolicies = await Policy.find({
-    dueDate:{
-      $gte: new Date(now.getFullYear(), now.getMonth() + 1,1),
-      $lt: new Date(now.getFullYear(), now.getMonth() +2,1),
-    },
-  });
-  const birthdayPolicies = await Policy.find({
-    "customerDOB":{$exists: true}
-  });
-   const birthdayCustomers = birthdayPolicies.filter(p => {
-      const dob = new Date(p.customerDOB);
-      return dob.getMonth() === nextMonth % 12;
-    });
-
-    // Simulate notification sending
-    duePolicies.forEach(p => {
-      console.log(`📩 Reminder: ${p.customerName}'s policy is due on ${p.dueDate}`);
-    });
-
-    birthdayCustomers.forEach(p => {
-      console.log(`🎂 Happy Birthday in advance: ${p.customerName} (${p.customerDOB})`);
-    });
-
-    res.json({
-      duePoliciesCount: duePolicies.length,
-      birthdayCount: birthdayCustomers.length,
-      message: "Notifications processed (console log only)."
-    });
-  } catch (err) {
-    console.error("Notification error:", err);
-    res.status(500).json({ error: "Failed to send notifications" });
-  }
-});
+router.get("/send-notification",notificationController.sendNotification);
 
 module.exports = router;
-
-
-
-
-
 
  /*
   try {
