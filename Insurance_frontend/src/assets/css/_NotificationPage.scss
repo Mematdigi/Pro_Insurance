@@ -1,0 +1,98 @@
+.notification-page {
+  background: #f8fafc;
+
+  .modal-backdrop{
+    background: #000000c7 !important;
+  }
+
+  .toast-container {
+  position: fixed !important;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1055;
+}
+
+
+  .bg-danger{
+    background: #dc354580 !important;
+  }
+
+  .bg-dark{
+    background: #6b7280c9 !important;
+  }
+
+  .top-banner {
+    background: linear-gradient(to right, #f8fafc, #f0f4ff);
+    border-radius: 10px;
+  }
+
+  .filter-section {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      color: #888;
+    }
+  }
+
+  .festival-card {
+    border-left-width: 5px !important;
+    border-color: #f59e0b !important;
+    border-radius: 10px;
+  }
+
+
+
+  .notification-table-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+
+    .table-container {
+      max-height: 320px;
+      overflow-y: auto;
+
+      table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+
+        thead {
+          position: sticky;
+          top: 0;
+          background-color: #f1f5f9;
+          z-index: 1;
+        }
+
+        th, td {
+          border-right: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+          background-color: #f9fafb;
+        }
+
+        .avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}

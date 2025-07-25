@@ -1,0 +1,55 @@
+.import-report-container {
+  background-color: #f8f9fc;
+  padding: 2rem;
+
+  .filter-box {
+    label {
+      font-weight: 500;
+    }
+    .form-control,
+    .form-select {
+      font-size: 0.95rem;
+      border-radius: 0.5rem;
+    }
+  }
+
+  .summary-box {
+    transition: all 0.3s;
+    border-left-width: 6px !important;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    small {
+      font-weight: 500;
+    }
+    strong {
+      font-size: 1.25rem;
+    }
+  }
+
+  .table-box {
+    .table {
+      font-size: 0.9rem;
+      th, td {
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+      .badge {
+        font-size: 0.75rem;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .summary-box {
+      flex: 1 1 100%;
+      text-align: center;
+      padding: 1rem !important;
+    }
+    .filter-box .row > div {
+      margin-bottom: 1rem;
+    }
+    .table-box .table-responsive {
+      padding: 0.5rem;
+    }
+  }
+}

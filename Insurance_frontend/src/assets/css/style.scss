@@ -1,0 +1,50 @@
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+
+.blue__btn{
+  background: #3b82f6;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 3px;
+    margin-right: 12px;
+    color: #fff;
+}
+
+.Reset__btn{
+  background: #6b7280;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 3px;
+    margin-right: 12px;
+    color: #fff;
+}
+
+.trash__btn{
+    background: transparent;
+    border: 2px solid #dd1818;
+    color: #dc3545;
+}
+// Import Files
+@import "_header";
+@import "_home";
+@import "_footer";
+@import "_auth";
+@import "_sidebar";
+@import "_dashboard";
+@import "_MyPoliciesPage";
+@import "_CompanySelection";
+@import "_AgentDashboard";
+@import "_CustomerProfilePage";
+@import "_DuePaymentsPage";
+@import "_ImportReport";
+@import "AddFamilyMember";
+@import "_PolicyAlterations";
+@import "_PremiumDeposit";
+@import "_medical-history";
+@import "_NotificationPage";
+@import "_InsuranceCategoryPage";

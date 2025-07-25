@@ -1,0 +1,108 @@
+// Banner
+.banner-section{
+    background-color: #fff9f1;
+}
+
+.insurance-strip {
+  background-color: #066b6b;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  padding: 12px 0;
+  position: relative;
+}
+
+.scrolling-text {
+  display: inline-block;
+  padding-left: 100%;
+  animation: scroll-left 25s linear infinite;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.service-item {
+  margin: 0 32px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Optional: Responsive Font Size */
+@media (max-width: 768px) {
+  .scrolling-text {
+    font-size: 1rem;
+  }
+
+  .service-item {
+    margin: 0 16px;
+  }
+}
+
+
+// Insurence Services
+.insurance-card {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #fffcf9;
+    border: 1px solid #198754;
+}
+
+.insurance-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.text-highlight {
+  color: #0d6efd;
+}
+
+
+.insurance-feature-section {
+  background-color: #035c55;
+  color: white;
+  border-top-right-radius: 40px;
+  border-bottom-left-radius: 40px;
+}
+
+.stat-box {
+  background-color: #02685f;
+  min-width: 120px;
+  color: white;
+}
+
+
+// Testimonial  Section 
+.testimonial-section {
+  background: linear-gradient(to bottom, #fff 0%, #fdfcfb 100%);
+}
+
+.testimonial-card {
+  transition: 0.3s ease;
+  border: 1px solid #eee;
+}
+
+.testimonial-card:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  transform: translateY(-6px);
+}
+
+.social-box {
+  transition: 0.3s ease;
+  background-color: #fff;
+  border-radius: 6px;
+}
+
+.social-box:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  transform: translateY(-4px);
+}
