@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const moment = require("moment");
 const Policy = require("../models/Policy"); // adjust if needed
-//const sendNotification = require("../utils/sendNotification"); // your custom function
+const sendNotification = require("../services/twilio.services"); // your custom function
 
 function startNotificationCron() {
   cron.schedule("* * * * *", async () => {
@@ -28,6 +28,7 @@ function startNotificationCron() {
       // Call custom utility to send notifications (email/sms/push/etc)
       if (duePolicies.length) sendNotification(duePolicies, "due");
       if (birthdays.length) sendNotification(birthdays, "birthday");
+
       if (anniversaries.length) sendNotification(anniversaries, "anniversary");
 
     } catch (error) {

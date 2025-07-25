@@ -4,7 +4,8 @@ const Policy = require('../../models/Policy');
 const dayjs = require('dayjs');
 const { notificationController } = require("../../controllers/index");
 
-router.get("/send-notification",notificationController.sendNotification);
+router.post("/send-notification",notificationController.sendNotification);
+// router.get("/send-notification",notificationController.sendNotification);
 
 module.exports = router;
 
