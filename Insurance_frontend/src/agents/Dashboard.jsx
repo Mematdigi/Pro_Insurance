@@ -102,7 +102,7 @@ const AgentDashboard = () => {
   return (
     <div className="dashboard-layout d-flex">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      {sidebarOpen && <div className="overlay" onClick={toggleSidebar}></div>}
+      {sidebarOpen && <div className="" onClick={toggleSidebar}></div>}
 
       <div className="main-content flex-grow-1">
         <div className="agent-dashboard-section">

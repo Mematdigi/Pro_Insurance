@@ -21,13 +21,11 @@ import {
   faClock
 } from "@fortawesome/free-solid-svg-icons";
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen = true, toggleSidebar }) => {
   const { user } = useAuth();
-  const [isOpen, setIsOpen] = useState(true);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleDropdown = (label) => {
     setOpenDropdown(openDropdown === label ? null : label);
   };
@@ -35,18 +33,13 @@ const Sidebar = () => {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
-        setIsOpen(true);
-      }
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Get insurance category from localStorage
-  const selectedCategory = localStorage.getItem("selectedInsuranceType");
+  const selectedCategory = localStorage.getItem("selectedInsuranceType") || "Life Insurance";
 
-  // Define all menus
   const generalInsuranceMenu = [
     { label: "Dashboard", path: "/agent/dashboard", icon: faTachometerAlt },
     { label: "Import Policy", path: "/agent/import-excel", icon: faFileInvoiceDollar },
@@ -72,14 +65,9 @@ const Sidebar = () => {
         { label: "Policy Alterations", path: "/agent/policy-alterations", icon: faExchangeAlt },
       ],
     },
-    {
-      label: "LIC Report",
-      icon: faBookOpen,
-      children: [
-        { label: "Premium Due", path: "/agent/due-payments", icon: faCalendarAlt },
-        { label: "Policy Calculator", path: "#", icon: faClock },
-      ],
-    },
+    
+    { label: "Premium Due", path: "/agent/due-payments", icon: faCalendarAlt },
+    { label: "Policy Calculator", path: "#", icon: faClock },
     { label: "Company", path: "/agent/companies", icon: faBuilding },
     { label: "Customer List", path: "/agent/customers", icon: faUsers },
     { label: "Notification", path: "/agent/notification", icon: faDownload },
@@ -94,10 +82,9 @@ const Sidebar = () => {
     { label: "Logout", path: "/login", icon: faSignOutAlt },
   ];
 
-  // Final menu assignment
   let menu;
   if (user?.role === "Agent") {
-    menu = selectedCategory === "general" ? generalInsuranceMenu : lifeInsuranceMenu;
+    menu = selectedCategory === "General Insurance" ? generalInsuranceMenu : lifeInsuranceMenu;
   } else {
     menu = customerMenu;
   }
@@ -108,10 +95,7 @@ const Sidebar = () => {
         <button
           className="mobile-toggle-btn"
           onClick={toggleSidebar}
-          style={{
-            left: isOpen ? "250px" : "15px",
-            transition: "left 0.3s ease"
-          }}
+          style={{ left: isOpen ? "250px" : "15px", transition: "left 0.3s ease" }}
         >
           <FontAwesomeIcon icon={faBars} />
         </button>
