@@ -3,8 +3,14 @@ const router = express.Router();
 const Policy = require('../../models/Policy');
 const dayjs = require('dayjs');
 const { notificationController } = require("../../controllers/index");
+const startNotificationCron = require("../../jobs/notificationScheduler")
 
-router.get("/send-notification",notificationController.sendNotification);
+router.post("/send-notification",notificationController.sendNotification);
+
+router.get("/send-notification", async(req, res) => {
+   await startNotificationCron();  // start the cron job
+  res.send("✅ Notification cron started!");
+});
 
 module.exports = router;
 
