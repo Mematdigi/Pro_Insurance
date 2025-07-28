@@ -17,6 +17,9 @@ class notificationController {
       res.status(500).json({ error: "Failed to send notifications" });
     }
   }
+  saveNotification =async(req,res)=>{
+      
+  }
 }
 
 module.exports = new notificationController();
