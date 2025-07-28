@@ -1,0 +1,267 @@
+.policy-view-page {
+  .main-content {
+    background: #f9fbff;
+    min-height: 100vh;
+
+    .header-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .policy-title {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .policy-subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .text-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .next-due-box {
+      background: #fff5f5;
+      border: 2px solid #f87171;
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      min-width: 220px;
+    }
+
+    .due-date {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .policy-tabs {
+      gap: 1rem;
+
+      button {
+        border: none;
+        background: #f3f4f6;
+        padding: 0.6rem 1.4rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: #4b5563;
+        transition: all 0.3s;
+
+        &.active {
+          background: #2563eb;
+          color: white;
+        }
+
+        &:hover {
+          background: #e5e7eb;
+        }
+      }
+    }
+
+    .card-box {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    .benefit-pill {
+      background: #f3f4f6;
+      border-radius: 50px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .quick-actions .btn {
+      font-size: 0.85rem;
+    }
+
+    .fw-medium {
+      font-weight: 500;
+    }
+
+    .fw-bold {
+      font-weight: 700;
+    }
+  }
+}
+
+
+// Custome Changes
+.policy-summary-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  .left-info {
+    .title {
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .sub-info {
+      font-size: 0.9rem;
+      color: #6b7280;
+      .policy-id {
+        border-left: 1px solid #d1d5db;
+        padding-left: 1rem;
+      }
+
+      .badge-pill {
+        background: #fbbf24;
+        color: #fff;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+    }
+
+    .label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .value {
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #111827;
+    }
+  }
+
+  .due-box {
+    background: #fef2f2;
+    border: 2px solid #f87171;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    min-width: 220px;
+    text-align: right;
+
+    .label {
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .date {
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    .note {
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+  }
+}
+
+
+.quick-actions-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  text-align: center;
+
+  .section-title {
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+
+  .action-btn {
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .primary-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+
+    &:hover {
+      background: #2563eb;
+    }
+  }
+
+  .pay-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+
+    &:hover {
+      background: #1e40af;
+    }
+  }
+
+  .outline-btn {
+    background: transparent;
+    color: #2563eb;
+    border: 1.5px solid #2563eb;
+
+    &:hover {
+      background: #eff6ff;
+    }
+  }
+
+  .help-text {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 1rem;
+  }
+
+  .chat-link {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #2563eb;
+    cursor: pointer;
+  }
+}
+
+
+.doc-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  background: #fff;
+  transition: 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .icon {
+    font-size: 1.6rem;
+  }
+
+  .download-icon {
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .doc-info {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+}

@@ -27,6 +27,8 @@ import PremiumDeposit from "./agents/PremiumDeposit";
 import MedicalHistoryPage from "./agents/MedicalHistoryPage";
 import NotificationPage from "./agents/NotificationPage";
 import InsuranceCategoryPage from "./agents/InsuranceCategoryPage";
+import PolicyDuePage from "./pages/PolicyDuePage";
+import PolicyViewPage from "./pages/PolicyViewPage";
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -45,7 +47,8 @@ function App() {
         <Route path="/customer/dashboard" element={<Dashboard />} />
         <Route path="/customer/mypolicies" element={<MyPoliciesPage />} />
         <Route path="customer/addinsurance" element={<AddInsurancePage />} />
-
+        <Route path="customer/due-payments" element={<PolicyDuePage />} />
+        <Route path="customer/policy-view" element={<PolicyViewPage />} />
 
         {/* Agent Routes */}
         <Route path="/agent/company-selection" element={<CompanySelection />} />
