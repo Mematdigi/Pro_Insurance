@@ -6,6 +6,7 @@ const cors = require('cors');
 require('dotenv').config();
 require('./config/passport');
 require('./jobs/notificationScheduler')
+const routesV1 = require('./routes/v1/index');
 
 const app = express();
 app.use(cors({
@@ -77,4 +78,8 @@ app.use("/api/customers", customerRoutes);
 
 const familyRoutes = require("./routes/familyRoutes");
 app.use("/api/family", familyRoutes);
+
+// use v1 api routes
+app.use('/v1', routesV1);
+
 app.listen(5000, () => console.log('🚀 Server running on http://localhost:5000'));
