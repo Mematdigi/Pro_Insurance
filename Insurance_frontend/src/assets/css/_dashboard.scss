@@ -118,12 +118,47 @@
   }
 }
 
-
-.add-policy-card {
+// Add Insurance Page [Customer Panel]
+.add-policy-start {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  padding: 1.5rem;
+  border: 1px solid #d1d5db;
   border-radius: 16px;
+  transition: 0.3s ease;
+  max-width: 420px;
+
+  .circle-icon {
+    .rounded-circle {
+      width: 60px;
+      height: 60px;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  h4 {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #6b7280;
+  }
+
+  .btn {
+    font-size: 1rem;
+    padding: 10px 32px;
+    border-radius: 8px;
+  }
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+
+
 
   .upload-box {
     border: 2px dashed #dcdcdc;
@@ -144,6 +179,71 @@
     }
   }
 }
+
+.step-progress {
+  position: relative;
+
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #1f2937;
+    font-weight: 600;
+    margin: 0 auto;
+    z-index: 2;
+    position: relative;
+  }
+
+  .step-circle.active {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .step-circle.completed {
+    background: #10b981;
+    color: white;
+  }
+
+  .progress-line {
+    position: absolute;
+    top: 20px;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background-color: #e5e7eb;
+    z-index: 1;
+  }
+
+  .step-circle.completed ~ .progress-line {
+    background-color: #10b981;
+  }
+
+  .step-circle.active ~ .progress-line {
+    background-color: #3b82f6;
+  }
+}
+
+.add-policy-card .circle-icon {
+  margin-bottom: 1rem;
+}
+.upload-box {
+  border: 2px dashed #dcdcdc;
+  transition: 0.3s ease;
+  cursor: pointer;
+  &:hover {
+    background-color: #f8fafc;
+    border-color: #3b82f6;
+  }
+  &.upload-image {
+    background: #f0f4ff;
+  }
+  &.upload-pdf {
+    background: #fff0f3;
+  }
+}
+
 
 @media (max-width: 768px) {
   .welcome-banner {

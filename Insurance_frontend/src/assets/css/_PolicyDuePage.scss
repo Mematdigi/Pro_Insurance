@@ -1,0 +1,220 @@
+.policy-due-layout {
+  display: flex;
+  background-color: #f5f8ff;
+  min-height: 100vh;
+
+  .main-content {
+    margin-left: 250px;
+    padding: 2rem;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      margin-left: 0;
+      padding: 1rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .page-subtitle {
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .alert-box {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      font-weight: 500;
+      margin-top: 1rem;
+    }
+
+    .filters-box {
+      background: #ffffff;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+
+      .search-bar,
+      .date-filter,
+      .type-dropdown {
+        background: #f1f5f9;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        flex: 1;
+
+        input {
+          background: transparent;
+          border: none;
+          outline: none;
+          width: 100%;
+          font-size: 0.9rem;
+        }
+
+        
+
+        svg {
+          color: #6b7280;
+        }
+      }
+
+      .type-dropdown {
+        justify-content: space-between;
+        cursor: pointer;
+      }
+    }
+
+    .policy-table {
+      background: #ffffff;
+      margin-top: 2rem;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+            background-color: #f9fafb !important;
+          th {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #6b7280;
+            padding-bottom: 1rem;
+            white-space: nowrap;
+            background-color: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+            }
+        }
+
+        tbody {
+          th,
+  td {
+    border: 1px solid #e5e7eb; // light gray border
+    padding: 0.85rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  thead {
+    background-color: #f9fafb;
+
+    th {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b7280;
+      border-bottom: 2px solid #d1d5db;
+    }
+  }
+
+  tbody {
+    tr {
+      &:hover {
+        background-color: #f8fafc;
+      }
+    }
+
+    td {
+      font-size: 0.95rem;
+    }
+  }
+
+          .status-badge {
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 999px;
+            font-weight: 600;
+            display: inline-block;
+
+            &.paid {
+              background: #d1fae5;
+              color: #047857;
+            }
+
+            &.overdue {
+              background: #fee2e2;
+              color: #b91c1c;
+            }
+
+            &.pending {
+              background: #fef9c3;
+              color: #b45309;
+            }
+          }
+
+          .btn-pay {
+            background-color: #3b82f6;
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+
+            &:hover {
+              background-color: #2563eb;
+            }
+          }
+        }
+      }
+
+      .text-muted {
+        font-size: 0.85rem;
+        margin-top: 1rem;
+      }
+    }
+
+    .pagination-box {
+      margin-top: 2rem;
+
+      .btn-outline-light {
+        background-color: #f3f4f6;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        color: #374151;
+        font-weight: 500;
+
+        &:hover {
+          background-color: #e5e7eb;
+        }
+      }
+    }
+
+    .support-box {
+      margin-top: 2rem;
+
+      .btn-help {
+        background: white;
+        border: 1px solid #d1d5db;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &:hover {
+          background-color: #f3f4f6;
+        }
+      }
+    }
+  }
+}
+
+

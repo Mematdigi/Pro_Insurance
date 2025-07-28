@@ -1099,25 +1099,110 @@
     margin-top: 1rem;
   }
 }
-.add-policy-card {
+.add-policy-start {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  padding: 1.5rem;
+  border: 1px solid #d1d5db;
   border-radius: 16px;
+  transition: 0.3s ease;
+  max-width: 420px;
 }
-.add-policy-card .upload-box {
+.add-policy-start .circle-icon .rounded-circle {
+  width: 60px;
+  height: 60px;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-policy-start h4 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.add-policy-start p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+.add-policy-start .btn {
+  font-size: 1rem;
+  padding: 10px 32px;
+  border-radius: 8px;
+}
+.add-policy-start:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+.add-policy-start .upload-box {
   border: 2px dashed #dcdcdc;
   transition: 0.3s ease;
   cursor: pointer;
 }
-.add-policy-card .upload-box:hover {
+.add-policy-start .upload-box:hover {
   background-color: #f8fafc;
   border-color: #3b82f6;
 }
-.add-policy-card .upload-box.upload-image {
+.add-policy-start .upload-box.upload-image {
   background: #f0f4ff;
 }
-.add-policy-card .upload-box.upload-pdf {
+.add-policy-start .upload-box.upload-pdf {
+  background: #fff0f3;
+}
+
+.step-progress {
+  position: relative;
+}
+.step-progress .step-circle {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #1f2937;
+  font-weight: 600;
+  margin: 0 auto;
+  z-index: 2;
+  position: relative;
+}
+.step-progress .step-circle.active {
+  background: #3b82f6;
+  color: white;
+}
+.step-progress .step-circle.completed {
+  background: #10b981;
+  color: white;
+}
+.step-progress .progress-line {
+  position: absolute;
+  top: 20px;
+  left: -50%;
+  width: 100%;
+  height: 2px;
+  background-color: #e5e7eb;
+  z-index: 1;
+}
+.step-progress .step-circle.completed ~ .progress-line {
+  background-color: #10b981;
+}
+.step-progress .step-circle.active ~ .progress-line {
+  background-color: #3b82f6;
+}
+
+.add-policy-card .circle-icon {
+  margin-bottom: 1rem;
+}
+
+.upload-box {
+  border: 2px dashed #dcdcdc;
+  transition: 0.3s ease;
+  cursor: pointer;
+}
+.upload-box:hover {
+  background-color: #f8fafc;
+  border-color: #3b82f6;
+}
+.upload-box.upload-image {
+  background: #f0f4ff;
+}
+.upload-box.upload-pdf {
   background: #fff0f3;
 }
 
@@ -3098,4 +3183,411 @@ table td, table th {
   .insurance-category-page .btn {
     width: 100%;
   }
+}
+
+.policy-due-layout {
+  display: flex;
+  background-color: #f5f8ff;
+  min-height: 100vh;
+}
+.policy-due-layout .main-content {
+  margin-left: 250px;
+  padding: 2rem;
+  width: 100%;
+}
+@media (max-width: 768px) {
+  .policy-due-layout .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}
+.policy-due-layout .main-content .page-title {
+  font-size: 2rem;
+  font-weight: 700;
+}
+.policy-due-layout .main-content .page-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+.policy-due-layout .main-content .alert-box {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+.policy-due-layout .main-content .filters-box {
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.policy-due-layout .main-content .filters-box .search-bar,
+.policy-due-layout .main-content .filters-box .date-filter,
+.policy-due-layout .main-content .filters-box .type-dropdown {
+  background: #f1f5f9;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  flex: 1;
+}
+.policy-due-layout .main-content .filters-box .search-bar input,
+.policy-due-layout .main-content .filters-box .date-filter input,
+.policy-due-layout .main-content .filters-box .type-dropdown input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.9rem;
+}
+.policy-due-layout .main-content .filters-box .search-bar svg,
+.policy-due-layout .main-content .filters-box .date-filter svg,
+.policy-due-layout .main-content .filters-box .type-dropdown svg {
+  color: #6b7280;
+}
+.policy-due-layout .main-content .filters-box .type-dropdown {
+  justify-content: space-between;
+  cursor: pointer;
+}
+.policy-due-layout .main-content .policy-table {
+  background: #ffffff;
+  margin-top: 2rem;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+.policy-due-layout .main-content .policy-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.policy-due-layout .main-content .policy-table table thead {
+  background-color: #f9fafb !important;
+}
+.policy-due-layout .main-content .policy-table table thead th {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #6b7280;
+  padding-bottom: 1rem;
+  white-space: nowrap;
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+.policy-due-layout .main-content .policy-table table tbody th,
+.policy-due-layout .main-content .policy-table table tbody td {
+  border: 1px solid #e5e7eb;
+  padding: 0.85rem;
+  text-align: left;
+  vertical-align: middle;
+}
+.policy-due-layout .main-content .policy-table table tbody thead {
+  background-color: #f9fafb;
+}
+.policy-due-layout .main-content .policy-table table tbody thead th {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  border-bottom: 2px solid #d1d5db;
+}
+.policy-due-layout .main-content .policy-table table tbody tbody tr:hover {
+  background-color: #f8fafc;
+}
+.policy-due-layout .main-content .policy-table table tbody tbody td {
+  font-size: 0.95rem;
+}
+.policy-due-layout .main-content .policy-table table tbody .status-badge {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  display: inline-block;
+}
+.policy-due-layout .main-content .policy-table table tbody .status-badge.paid {
+  background: #d1fae5;
+  color: #047857;
+}
+.policy-due-layout .main-content .policy-table table tbody .status-badge.overdue {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.policy-due-layout .main-content .policy-table table tbody .status-badge.pending {
+  background: #fef9c3;
+  color: #b45309;
+}
+.policy-due-layout .main-content .policy-table table tbody .btn-pay {
+  background-color: #3b82f6;
+  color: white;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.policy-due-layout .main-content .policy-table table tbody .btn-pay:hover {
+  background-color: #2563eb;
+}
+.policy-due-layout .main-content .policy-table .text-muted {
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+.policy-due-layout .main-content .pagination-box {
+  margin-top: 2rem;
+}
+.policy-due-layout .main-content .pagination-box .btn-outline-light {
+  background-color: #f3f4f6;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  color: #374151;
+  font-weight: 500;
+}
+.policy-due-layout .main-content .pagination-box .btn-outline-light:hover {
+  background-color: #e5e7eb;
+}
+.policy-due-layout .main-content .support-box {
+  margin-top: 2rem;
+}
+.policy-due-layout .main-content .support-box .btn-help {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.policy-due-layout .main-content .support-box .btn-help:hover {
+  background-color: #f3f4f6;
+}
+
+.policy-view-page .main-content {
+  background: #f9fbff;
+  min-height: 100vh;
+}
+.policy-view-page .main-content .header-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+.policy-view-page .main-content .policy-title {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.policy-view-page .main-content .policy-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+.policy-view-page .main-content .text-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+.policy-view-page .main-content .next-due-box {
+  background: #fff5f5;
+  border: 2px solid #f87171;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  min-width: 220px;
+}
+.policy-view-page .main-content .due-date {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.policy-view-page .main-content .policy-tabs {
+  gap: 1rem;
+}
+.policy-view-page .main-content .policy-tabs button {
+  border: none;
+  background: #f3f4f6;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #4b5563;
+  transition: all 0.3s;
+}
+.policy-view-page .main-content .policy-tabs button.active {
+  background: #2563eb;
+  color: white;
+}
+.policy-view-page .main-content .policy-tabs button:hover {
+  background: #e5e7eb;
+}
+.policy-view-page .main-content .card-box {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+.policy-view-page .main-content .benefit-pill {
+  background: #f3f4f6;
+  border-radius: 50px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+}
+.policy-view-page .main-content .quick-actions .btn {
+  font-size: 0.85rem;
+}
+.policy-view-page .main-content .fw-medium {
+  font-weight: 500;
+}
+.policy-view-page .main-content .fw-bold {
+  font-weight: 700;
+}
+
+.policy-summary-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.policy-summary-card .left-info .title {
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin-bottom: 0.4rem;
+}
+.policy-summary-card .left-info .sub-info {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+.policy-summary-card .left-info .sub-info .policy-id {
+  border-left: 1px solid #d1d5db;
+  padding-left: 1rem;
+}
+.policy-summary-card .left-info .sub-info .badge-pill {
+  background: #fbbf24;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.policy-summary-card .left-info .label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+.policy-summary-card .left-info .value {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #111827;
+}
+.policy-summary-card .due-box {
+  background: #fef2f2;
+  border: 2px solid #f87171;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  min-width: 220px;
+  text-align: right;
+}
+.policy-summary-card .due-box .label {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.policy-summary-card .due-box .date {
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+.policy-summary-card .due-box .note {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.quick-actions-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  text-align: center;
+}
+.quick-actions-card .section-title {
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+.quick-actions-card .action-btn {
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quick-actions-card .primary-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+.quick-actions-card .primary-btn:hover {
+  background: #2563eb;
+}
+.quick-actions-card .pay-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+.quick-actions-card .pay-btn:hover {
+  background: #1e40af;
+}
+.quick-actions-card .outline-btn {
+  background: transparent;
+  color: #2563eb;
+  border: 1.5px solid #2563eb;
+}
+.quick-actions-card .outline-btn:hover {
+  background: #eff6ff;
+}
+.quick-actions-card .help-text {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 1rem;
+}
+.quick-actions-card .chat-link {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+.doc-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  background: #fff;
+  transition: 0.3s ease;
+}
+.doc-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.doc-card .icon {
+  font-size: 1.6rem;
+}
+.doc-card .download-icon {
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.doc-card .doc-info {
+  font-size: 0.85rem;
+  line-height: 1.4;
 }/*# sourceMappingURL=style.css.map */
