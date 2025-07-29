@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import Sidebar from "../components/Sidebar";
 
 const MyPoliciesPage = () => {
   const [view, setView] = useState('grid');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const navigate = useNavigate();
+
 
   const policies = [
     {
@@ -101,7 +105,7 @@ const MyPoliciesPage = () => {
         <div className="my-policies">
           <div className="d-flex justify-content-between align-items-start flex-wrap">
             <div className="text-section">
-              <h2>My Policies</h2>
+              <h2 className='fw-bold h_Dark'>My Policies</h2>
               <p>Manage and track all your insurance policies in one place</p>
             </div>
           </div>
@@ -177,7 +181,7 @@ const MyPoliciesPage = () => {
                     </div>
 
                     <div className="card-actions">
-                      <button className="btn-outline">View Details</button>
+                      <button className="btn-outline" onClick={() => navigate('/customer/policy-view')}>View Details</button>
                       <button className="btn-filled">Pay Now</button>
                     </div>
                   </div>

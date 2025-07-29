@@ -66,13 +66,13 @@ app.use('/api', policyRoute);
 const agentRoutes = require('./routes/agentRoutes');
 app.use('/api/agent', agentRoutes);
 
-/*
-const scheduleNotifications = require('./jobs/notificationScheduler');
-scheduleNotifications(); // ⏰ Start the cron job
 
-const notificationRoute = require('./routes/notificationRoute');
-app.use('/api/notifications', notificationRoute);
-*/
+// const scheduleNotifications = require('./jobs/notificationScheduler');
+//   scheduleNotifications(); 
+
+// const notificationRoute = require('./routes/notificationRoute');
+// app.use('/api/notifications', notificationRoute);
+// */
 const customerRoutes = require("./routes/customerRoutes");
 app.use("/api/customers", customerRoutes);
 
