@@ -1,4 +1,5 @@
 const FamilyGroup = require("../models/FamilyGroup");
+const Policy = require('../models/Policy');
 
 exports.checkOrCreateGroup = async (req, res) => {
     const {agentId, primaryHolder,policyNumber } = req.body;
@@ -59,5 +60,52 @@ exports.addFamilyMember = async (req, res) => {
   } catch (err) {
     console.error("❌ Error adding member:", error);
     res.status(500).json({ msg: "Failed to fetch groups" });
+  }
+};
+
+
+exports.getFamilyGroupDetails = async (req, res) => {
+  const groupId = req.params.groupId?.trim().toUpperCase();
+
+  try {
+    const group = await FamilyGroup.findOne({ groupId });
+    
+    if (!group) {
+      console.log("No group found for ID:", groupId)
+      return res.status(404).json({ msg: "Group not found" });
+    }
+    
+    return res.status(200).json({
+          groupId: group.groupId,
+          primaryHolder: group.primaryHolder,
+          policyNumber: group.policyNumber,
+          familyMembers: group.familyMembers, 
+        });
+  } catch (error) {
+    console.error("❌ Error fetching family group:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};  
+
+
+exports.searchMemberByName = async (req, res) => {
+  try {
+    const name = req.params.name?.trim();
+    if (!name) {
+      return res.status(400).json({ msg: "Name parameter is required" });
+    }
+    const results = await Policy.find({
+      customerName: { $regex: name, $options: 'i' } 
+    }).select("customerName customerPhone");
+    return res.status(200).json(
+      results.map(r => ({
+        _id: r._id,
+        name: r.customerName,
+        contact: r.customerPhone || "No Phone"
+      }))
+    );
+  } catch (error) {
+    console.error("❌ Error searching member by name:", error);
+    return res.status(500).json({ msg: "Server Error" });
   }
 };
