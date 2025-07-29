@@ -160,7 +160,7 @@ const AgentDashboard = () => {
                     </div>
                   </div>
                   <h4 className="fw-bold mb-1">{totalCustomers}</h4>
-                  <div className="text-success small">+12.5% from last month</div>
+                  
                 </div>
               </div>
 
@@ -173,7 +173,7 @@ const AgentDashboard = () => {
                     </div>
                   </div>
                   <h4 className="fw-bold mb-1">₹{totalEarnings.toLocaleString()}</h4>
-                  <div className="text-success small">+8.2% from last month</div>
+                  
                 </div>
               </div>
 
@@ -186,22 +186,11 @@ const AgentDashboard = () => {
                     </div>
                   </div>
                   <h4 className="fw-bold mb-1">₹{(totalEarnings * 0.22).toLocaleString()}</h4>
-                  <div className="text-danger small">-3.1% from last month</div>
+                  
                 </div>
               </div>
 
-              <div className="col-md-6 col-lg-3">
-                <div className="p-4 bg-white shadow-sm rounded-3 h-100">
-                  <div className="d-flex justify-content-between align-items-start mb-1">
-                    <p className="text-muted mb-1">Due Rate</p>
-                    <div className="bg-warning bg-opacity-10 text-warning p-2 rounded-3">
-                      <i className="bi bi-percent fs-5"></i>
-                    </div>
-                  </div>
-                  <h4 className="fw-bold mb-1">21.6%</h4>
-                  <div className="text-success small">-1.2% from last month</div>
-                </div>
-              </div>
+              
             </div>
 
             {/* Action Cards */}

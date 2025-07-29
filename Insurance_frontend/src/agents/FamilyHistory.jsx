@@ -3,14 +3,26 @@ import Sidebar from "../components/Sidebar";
 
 const FamilyHistory = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState("Rajesh Kumar");
+  //const [selectedMember, setSelectedMember] = useState("Rajesh Kumar");
+  const [groupId, setGroupId] = useState("");
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
+
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  const familyMembers = [];
-    
-  const selected = familyMembers.find(m => m.name === selectedMember);
+  const handleSearch = async () => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
+    const data = await res.json();
+    setFamilyMembers(data.familyMembers || []);
+    setSelectedMember(data.familyMembers?.[0] || null);
+  } catch (err) {
+    console.error("❌ Failed to fetch group data:", err);
+  }
+};
 
+    
   return (
     <div className="dashboard-layout d-flex">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
@@ -23,13 +35,14 @@ const FamilyHistory = () => {
           <h6 className="fw-semibold"><i className="bi bi-search me-2"></i>Search Family Members</h6>
           <div className="row mt-3">
             <div className="col-md-5 mb-2">
-              <input type="text" className="form-control" placeholder="Enter policy number" />
+              <input type="text" className="form-control" placeholder="Enter Group ID" value={groupId} onChange={(e) => setGroupId(e.target.value)} />
             </div>
             <div className="col-md-5 mb-2">
               <input type="text" className="form-control" placeholder="Enter family member name" />
             </div>
             <div className="col-md-2">
-              <button className="btn btn-primary w-100"><i className="bi bi-search me-1"></i>Search</button>
+              <button className="btn btn-primary w-100" onClick={handleSearch}>
+                <i className="bi bi-search me-1"></i>Search</button>
             </div>
           </div>
         </div>
@@ -65,52 +78,16 @@ const FamilyHistory = () => {
                     <td>{member.loan}</td>
                   </tr>
                 ))}
-              </tbody>
+                {familyMembers.length === 0 && (
+                  <tr><td colSpan="8" className="text-center">No members found</td></tr>
+                )} 
+                </tbody>
             </table>
           </div>
         </div>
 
         {/* Premium Due Section */}
-        <div className="bg-white shadow-sm p-4 rounded-4">
-          <h6 className="fw-semibold"><i className="bi bi-calendar2-event me-2"></i>Premium Due This Month</h6>
-          <div className="d-flex gap-3 mt-3 flex-wrap">
-            {familyMembers.map((member) => (
-              <button
-                key={member.name}
-                className={`btn ${selectedMember === member.name ? 'btn-primary' : 'btn-light'}`}
-                onClick={() => setSelectedMember(member.name)}
-              >
-                {member.name}
-              </button>
-            ))}
-          </div>
-
-          {selected.premiumSchedule.length > 0 && (
-            <div className="mt-4">
-              <h6>{selected.name} - Premium Schedule</h6>
-              <table className="table table-bordered mt-2">
-                <thead className="table-light">
-                  <tr>
-                    <th>Date</th>
-                    <th>Policy No.</th>
-                    <th>Due Amount (₹)</th>
-                    <th>Payment Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selected.premiumSchedule.map((entry, idx) => (
-                    <tr key={idx}>
-                      <td>{entry.date}</td>
-                      <td>{entry.policyNo}</td>
-                      <td>{entry.amount}</td>
-                      <td><span className="badge bg-warning-subtle text-warning">{entry.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+  
       </div>
     </div>
   );

@@ -129,7 +129,7 @@ const CompanyPage = () => {
           <div className="row g-3 mb-4">
             <div className="col-md-3">
               <div className="p-3 bg-white shadow-sm rounded">
-                <p className="mb-1 text-muted">New Customers</p>
+                <p className="mb-1 text-muted">Total Companies</p>
                 <h4>{companyStats.reduce((a, b) => a + b.customers, 0)}</h4>
               </div>
             </div>
@@ -145,12 +145,7 @@ const CompanyPage = () => {
                 <h4 className="text-primary">₹{companyStats.reduce((a, b) => a + b.totalEarnings, 0).toLocaleString()}</h4>
               </div>
             </div>
-            <div className="col-md-3">
-              <div className="p-3 bg-white shadow-sm rounded">
-                <p className="mb-1 text-muted">Collection Rate</p>
-                <h4 className="text-warning">93%</h4>
-              </div>
-            </div>
+           
           </div>
 
           {/* Filter + Delete UI */}

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
+//import * as pdfjsLib from 'pdfjs-dist';
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 
 // ✅ Vite-compatible way to load PDF worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+//pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 
 const AddInsurancePage = () => {
