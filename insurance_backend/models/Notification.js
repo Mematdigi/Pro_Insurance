@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 
-const MessageSchema = new mongoose.Schema({
+const NotificationSchema = new mongoose.Schema({
   agentId: { type: mongoose.Schema.Types.ObjectId, ref: "Agent", required: true },
-  customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
+  policyId: { type: mongoose.Schema.Types.ObjectId, ref: "Policy", required: true },
   message: { type: String, required: true },
+  occasion: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("Message", MessageSchema);
+module.exports = mongoose.model("Notification", NotificationSchema);
