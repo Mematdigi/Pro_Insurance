@@ -1,6 +1,6 @@
 const cron = require("node-cron");
 const moment = require("moment");
-const Policy = require("../models/Policy"); // adjust if needed
+const Policy = require("../models/AgentPolicies"); // adjust if needed
 const {sendSms} = require("../services/twilio.services"); // your custom function
 const saveNotification = require("../utils/helperFunction"); // Import save function
 const Notification = require("../models/Notification");  // Ensure correct model is used
