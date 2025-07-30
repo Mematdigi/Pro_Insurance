@@ -1,4 +1,4 @@
-const Policy = require('../models/Policy');
+const Policy = require('../models/AgentPolicies');
 
 const addPolicyController = async (req, res) => {
   const { company, policyType, policyNumber, policyDetails } = req.body;

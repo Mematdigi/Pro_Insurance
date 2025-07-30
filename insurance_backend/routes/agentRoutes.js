@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const Policy = require("../models/Policy");
+const Policy = require("../models/AgentPolicies");
 
 router.get("/:agentId", async (req, res) => {
   try{

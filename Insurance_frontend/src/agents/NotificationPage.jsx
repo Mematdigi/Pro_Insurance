@@ -31,7 +31,7 @@ const NotificationPage = () => {
     setShowModal(true);
   };
 
-  const handleSendMessage = async (phoneNumber, message) => {
+  const handleSendMessage = async (person, message) => {
     try {
       const res = await fetch("http://localhost:5000/v1/notification/send-notification", {
         method: "POST",
@@ -40,7 +40,9 @@ const NotificationPage = () => {
         },
         body: JSON.stringify({
           message: message,
-          phone: phoneNumber
+          phone: person.customerPhone,
+          agentId: person.agentId,
+          policyId: person._id || null
         })
       });
      
@@ -294,7 +296,7 @@ const NotificationPage = () => {
             <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
 <Button
   variant="dark"
-  onClick={() => handleSendMessage(selectedPerson?.customerPhone, wishMessage)}
+  onClick={() => handleSendMessage(selectedPerson, wishMessage)}
 >
   Send Message
 </Button>          </Modal.Footer>

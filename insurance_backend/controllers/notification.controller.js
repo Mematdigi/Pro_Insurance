@@ -1,13 +1,12 @@
 
-const Policy = require('../models/Policy');
+const Policy = require('../models/AgentPolicies');
 const dayjs = require('dayjs');
 const { sendSms } = require('../services/twilio.services');
 const saveNotification = require('../utils/helperFunction'); // Import save function
 const Notification = require("../models/Notification");  // Ensure correct model is used
 
 class notificationController {
-
-  sendNotification = async (req, res) => {
+sendNotification = async (req, res) => {
     try {
       const { message, phone,agentId, policyId } = req.body;
 
