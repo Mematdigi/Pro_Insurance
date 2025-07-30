@@ -66,14 +66,15 @@ app.use('/api', policyRoute);
 const agentRoutes = require('./routes/agentRoutes');
 app.use('/api/agent', agentRoutes);
 
-
+// //for schedulers
 // const scheduleNotifications = require('./jobs/notificationScheduler');
-//   scheduleNotifications(); 
+//   scheduleNotifications();
+
 
 // const notificationRoute = require('./routes/notificationRoute');
 // app.use('/api/notifications', notificationRoute);
 // */
-const customerRoutes = require("./routes/customerRoutes");
+const customerRoutes = require("./routes/v1/customer.route");
 app.use("/api/customers", customerRoutes);
 
 const familyRoutes = require("./routes/familyRoutes");
