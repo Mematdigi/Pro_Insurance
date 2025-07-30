@@ -94,29 +94,28 @@ const AddInsurancePage = () => {
           )}
 
           {/* Step Progress Bar */}
-         {step > 0 && (
-  <div className="step-progress mb-5 mt-5">
-    <div className="d-flex justify-content-between align-items-center position-relative">
-      {["Company", "Policy No.", "Upload"].map((label, index) => (
-        <div key={index} className="text-center flex-fill position-relative">
-          {/* Line connector except first */}
-          {index > 0 && (
-            <div className="progress-line"></div>
+          {step > 0 && (
+          <div className="step-progress mb-5 mt-5">
+            <div className="d-flex justify-content-between align-items-center position-relative">
+              {["Company", "Policy No.", "Upload"].map((label, index) => (
+                <div key={index} className="text-center flex-fill position-relative">
+                  {/* Line connector except first */}
+                  {index > 0 && (
+                    <div className="progress-line"></div>
+                  )}
+                  <div className={`step-circle ${step > index ? 'completed' : step === index ? 'active' : ''}`}>
+                    {step > index ? <i className="bi bi-check2"></i> : index + 1}
+                  </div>
+                  <div className="fw-semibold mt-2">{label}</div>
+                  <div className="text-muted small">
+                    {index === 0 ? "Select insurance provider" :
+                      index === 1 ? "Enter policy number" : "Upload documents"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           )}
-          <div className={`step-circle ${step > index ? 'completed' : step === index ? 'active' : ''}`}>
-            {step > index ? <i className="bi bi-check2"></i> : index + 1}
-          </div>
-          <div className="fw-semibold mt-2">{label}</div>
-          <div className="text-muted small">
-            {index === 0 ? "Select insurance provider" :
-              index === 1 ? "Enter policy number" : "Upload documents"}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
 
           {/* Step 1: Select Company */}
           {step === 1 && (
