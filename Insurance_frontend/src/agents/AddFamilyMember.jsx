@@ -21,6 +21,11 @@ const AddFamilyMember = () => {
   const [groupId, setGroupId] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [searchCustomer, setSearchCustomer] = useState({ name: "", policyNumber: "" });
+  const [memberQuery, setMemberQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showPolicyForm, setShowPolicyForm] = useState(false);
+
 
   const [form, setForm] = useState({
     policyNumber: "",
@@ -52,12 +57,6 @@ const AddFamilyMember = () => {
 
   const [familyList, setFamilyList] = useState([]);
 
-  
-
-  const handleMemberChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
   const handlePolicyChange = (e) => {
     setPolicyForm({ ...policyForm, [e.target.name]: e.target.value });
   };
@@ -69,7 +68,7 @@ const AddFamilyMember = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            agentId: user?.id || "AGENT123", // fallback
+            agentId: user?.id , // fallback
             primaryHolder: searchCustomer.name,
             policyNumber: searchCustomer.policyNumber,
           }),
@@ -79,12 +78,15 @@ const AddFamilyMember = () => {
         console.log("Group API Response:", data);
 
         if (res.ok) {
-          if (!data.groupId) {
-            alert("Group ID missing in response");
-            return;
-          }
           setGroupId(data.groupId);
           setFormSubmitted(true);
+          
+          const memberRes = await fetch(`http://localhost:5000/api/family/group/${data.groupId}`);
+          const memberData = await memberRes.json();
+
+          if (memberRes.ok) {
+            setFamilyList(memberData.familyMembers || []);
+          }
           setForm((prev) => ({
             ...prev,
             primaryHolder: searchCustomer.name,
@@ -102,6 +104,42 @@ const AddFamilyMember = () => {
     }
   };
 
+  
+  useEffect(() => {
+  const fetchSuggestions = async () => {
+    if (memberQuery.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:5000/api/family/search-member/${memberQuery}`);
+      const data = await res.json();
+      setSuggestions(data);
+    } catch (err) {
+      console.error("Error fetching suggestions", err);
+    }
+  };
+
+  fetchSuggestions();
+}, [memberQuery]);
+
+
+const handleMemberChange = (e) => {
+    //setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]: value,
+    }));
+    if (name === "memberName") {
+      setMemberQuery(value);
+      setSelectedMember(null);
+    }
+  };
+
+
+
+  
   const handleAddMember = async () => {
     if (!form.memberName || !form.relation || !form.age) {
       alert("Please fill all required fields.");
@@ -336,25 +374,57 @@ const AddFamilyMember = () => {
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#333' }}>
                       Member Name *
                     </label>
-                    <input 
-                      type="text" 
-                      name="memberName" 
-                      placeholder="Enter member name" 
-                      value={form.memberName} 
-                      onChange={handleMemberChange}
-                      style={{ 
-                        width: '100%', 
-                        padding: '10px', 
-                        border: '1px solid #ddd', 
-                        borderRadius: '4px',
-                        fontSize: '14px'
-                      }}
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        name="memberName"
+                        placeholder="Enter member name"
+                        value={form.memberName}
+                        onChange={(e) => {
+                          handleMemberChange(e);
+                          setMemberQuery(e.target.value);
+                        }}
+                        />
+                        {suggestions.length > 0 && (
+                        <ul 
+                        style={{
+                            listStyle: "none",
+                            margin: 0,
+                            padding: "5px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            background: "white",
+                            position: "absolute",
+                            zIndex: 1000,
+                            width: "100%"
+                          }}
+                          >
+                            {suggestions.map((sug)=>(
+                            <li
+                              key={sug._id}
+                              style={{
+                                padding: "8px",
+                                cursor: "pointer",
+                                borderBottom: "1px solid #ddd"
+                              }}
+                              onClick={()=>{
+                                setForm({...form, memberName: sug.name});
+                                setSuggestions([]);
+                              }}
+                              >
+                              {sug.name} - ({sug.contact || "No Contact"})
+                              </li>
+
+                            ))}
+
+                        </ul>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#333' }}>
-                      Relation *
-                    </label>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#333' }}>
+                        Relation *
+                      </label>
                     <select 
                       name="relation" 
                       value={form.relation} 

@@ -160,7 +160,7 @@ const AgentDashboard = () => {
                     </div>
                   </div>
                   <h4 className="fw-bold mb-1">{totalCustomers}</h4>
-                  <div className="text-success small">+12.5% from last month</div>
+                  
                 </div>
               </div>
 
@@ -173,7 +173,7 @@ const AgentDashboard = () => {
                     </div>
                   </div>
                   <h4 className="fw-bold mb-1">₹{totalEarnings.toLocaleString()}</h4>
-                  <div className="text-success small">+8.2% from last month</div>
+                  
                 </div>
               </div>
 
@@ -186,7 +186,7 @@ const AgentDashboard = () => {
                     </div>
                   </div>
                   <h4 className="fw-bold mb-1">₹{(totalEarnings * 0.22).toLocaleString()}</h4>
-                  <div className="text-danger small">-3.1% from last month</div>
+                  
                 </div>
               </div>
 

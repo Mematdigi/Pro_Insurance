@@ -129,7 +129,7 @@ const CompanyPage = () => {
           <div className="row g-3 mb-4">
             <div className="col-md-3">
               <div className="p-3 bg-white shadow-sm rounded">
-                <p className="mb-1 text-muted">New Customers</p>
+                <p className="mb-1 text-muted">Total Companies</p>
                 <h4>{companyStats.reduce((a, b) => a + b.customers, 0)}</h4>
               </div>
             </div>

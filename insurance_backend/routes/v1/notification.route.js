@@ -2,51 +2,19 @@ const express = require('express');
 const router = express.Router();
 const Policy = require('../../models/Policy');
 const dayjs = require('dayjs');
-const { notificationController } = require("../../controllers/index");
+const { notificationController, } = require("../../controllers/index");
 const startNotificationCron = require("../../jobs/notificationScheduler")
 
-router.post("/send-notification",notificationController.sendNotification);
 
-router.get("/send-notification", async(req, res) => {
-   await startNotificationCron();  // start the cron job
+router.post("/send-notification", notificationController.sendNotification);
+
+router.get("/send-notification", async (req, res) => {
+  await startNotificationCron();  // start the cron job
   res.send("✅ Notification cron started!");
 });
 
-module.exports = router;
+router.get("/fetch-notification/:agentId", notificationController.fetchNotification);
 
- /*
-  try {
-    const policies = await Policy.find();
-    const today = dayjs();
-    const nextMonth = today.add(1, 'month');
-    let count = 0;
-
-    policies.forEach((p) => {
-      const name = p.customerName || "Customer";
-      const phone = p.customerPhone || "N/A";
-      const dob = p.dateOfBirth;
-      const agent = p.agentCode || "Your Agent";
-      const endDate = p.policyDetails?.endDate;
-
-      // Birthday
-      if (dob && dayjs(dob).format('MM-DD') === today.format('MM-DD')) {
-        sendNotification("birthday", phone, `🎂 Happy Birthday ${name}! - From ${agent}`);
-        count++;
-      }
-
-      // Policy Expiry
-      if (endDate && dayjs(endDate).format('MM-YYYY') === nextMonth.format('MM-YYYY')) {
-        sendNotification("expiry", phone, `🛡️ Reminder: Your policy is expiring on ${endDate}. Contact ${agent} to renew.`);
-        count++;
-      }
-    });
-
-    res.json({ message: `✅ Notifications sent: ${count}` });
-  } catch (err) {
-    console.error("❌ Error in notification route:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+router.get("/view-message/:message_id", notificationController.viewMessage);
 
 module.exports = router;
-*/
