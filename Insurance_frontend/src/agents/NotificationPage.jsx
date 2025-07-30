@@ -80,11 +80,11 @@ const NotificationPage = () => {
       fetchPolicies();
     }, []);
 
-  const birthdays = [
-    { initials: "RK", name: "Rajesh Kumar", email: "rajesh.kumar@email.com", date: "15 July", age: "Turning 40", policy: "LIC123456789", phone: "+91 98765 43210" },
-    { initials: "PS", name: "Priya Sharma", email: "priya.sharma@email.com", date: "22 July", age: "Turning 35", policy: "LIC987654321", phone: "+91 87564 32109" },
-    { initials: "AP", name: "Amit Patel", email: "amit.patel@email.com", date: "28 July", age: "Turning 37", policy: "LIC456789123", phone: "+91 75643 21098" },
-  ];
+  // const birthdays = [
+  //   { initials: "RK", name: "Rajesh Kumar", email: "rajesh.kumar@email.com", date: "15 July", age: "Turning 40", policy: "LIC123456789", phone: "+91 98765 43210" },
+  //   { initials: "PS", name: "Priya Sharma", email: "priya.sharma@email.com", date: "22 July", age: "Turning 35", policy: "LIC987654321", phone: "+91 87564 32109" },
+  //   { initials: "AP", name: "Amit Patel", email: "amit.patel@email.com", date: "28 July", age: "Turning 37", policy: "LIC456789123", phone: "+91 75643 21098" },
+  // ];
 
 
   const festivals = [
@@ -100,24 +100,104 @@ const NotificationPage = () => {
     return keys.some((key) => item[key]?.toLowerCase().includes(q));
   };
 
-  const filteredBirthdays = birthdays.filter(
-    (item) =>
-      (occasionFilter === "All Occasions" || occasionFilter === "Birthday") &&
-      (monthFilter === "All Months" || filterMonth(item.date) === monthFilter) &&
-      matchSearch(item, ["name", "email", "phone", "policy"])
-  );
+  // const filteredBirthdays = birthdays.filter(
+  //   (item) =>
+  //     (occasionFilter === "All Occasions" || occasionFilter === "Birthday") &&
+  //     (monthFilter === "All Months" || filterMonth(item.date) === monthFilter) &&
+  //     matchSearch(item, ["name", "email", "phone", "policy"])
+  // );
 
-  const filteredFestivals = festivals.filter(
-    (item) =>
-      (occasionFilter === "All Occasions" || occasionFilter === "Festivals") &&
-      (monthFilter === "All Months" || filterMonth(item.date) === monthFilter) &&
-      matchSearch(item, ["title", "desc"])
-  );
+  // const filteredFestivals = festivals.filter(
+  //   (item) =>
+  //     (occasionFilter === "All Occasions" || occasionFilter === "Festivals") &&
+  //     (monthFilter === "All Months" || filterMonth(item.date) === monthFilter) &&
+  //     matchSearch(item, ["title", "desc"])
+  // );
 
   const handleClear = () => {
     setSearchTerm("");
     setOccasionFilter("All Occasions");
     setMonthFilter("All Months");
+  };
+
+  // Log Filter Conditions
+
+  // let logs = []; // Initialize logs state
+  // Add Logs Stat
+// Logs Data
+   const [logs] = useState([
+    {
+      id: 1,
+      customerName: "John Doe",
+      customerEmail: "john.doe@email.com",
+      customerPhone: "+1 234 567 8900",
+      message: "Happy Birthday! 🎉 Wishing you joy and prosperity.",
+      dateTime: "2024-07-29 10:30 AM",
+      status: "Success",
+      occasion: "Birthday",
+      policyNumber: "POL-2024-001",
+    },
+    {
+      id: 2,
+      customerName: "Sarah Johnson",
+      customerEmail: "sarah.j@email.com",
+      customerPhone: "+1 234 567 8901",
+      message: "Policy Due Reminder! Please renew to avoid lapse.",
+      dateTime: "2024-07-28 09:00 AM",
+      status: "Success",
+      occasion: "Policy Due",
+      policyNumber: "POL-2024-002",
+    },
+    {
+      id: 3,
+      customerName: "Mike Wilson",
+      customerEmail: "mike.w@email.com",
+      customerPhone: "+1 234 567 8902",
+      message: "Custom message sent successfully.",
+      dateTime: "2024-07-27 04:15 PM",
+      status: "Success",
+      occasion: "Custom",
+      policyNumber: "POL-2024-003",
+    },
+    {
+      id: 4,
+      customerName: "Emily Davis",
+      customerEmail: "emily.davis@email.com",
+      customerPhone: "+1 234 567 8903",
+      message: "Happy Birthday Emily! 🎂",
+      dateTime: "2024-07-26 08:45 AM",
+      status: "Success",
+      occasion: "Birthday",
+      policyNumber: "POL-2024-004",
+    },
+  ]);
+
+  const [activeTab, setActiveTab] = useState("All");
+  const [filteredLogs, setFilteredLogs] = useState(logs);
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [selectedLog, setSelectedLog] = useState(null);
+
+  // Handle Tab Filter
+  useEffect(() => {
+            const agent = user || JSON.parse(localStorage.getItem("user"));
+          if (!agent?.id) {
+            console.warn("❌ Agent ID not found.");
+            return;
+          }
+
+      // //  logs = await fetch(`http://localhost:5000/v1/notification/fetch-notification/${agent.id}`);
+      // const data = await logs.json();
+      // console.log("Logs Data:", data);
+    if (activeTab === "All") {
+      setFilteredLogs(logs);
+    } else {
+      setFilteredLogs(logs.filter((log) => log.occasion === activeTab));
+    }
+  }, [activeTab, logs]);
+
+  const handleViewLog = (log) => {
+    setSelectedLog(log);
+    setShowLogModal(true);
   };
 
   return (
@@ -165,7 +245,7 @@ const NotificationPage = () => {
               </select>
             </div>
             <div className="col-md-1">
-              <button className="btn btn-dark w-100">Apply</button>
+              <button className="btn View__btn w-100">Apply</button>
             </div>
             <div className="col-md-1">
               <button className="btn btn-secondary w-100" onClick={handleClear}>Clear</button>
@@ -174,7 +254,7 @@ const NotificationPage = () => {
         </div>
 
         {/* Birthday Table */}
-        {(occasionFilter === "All Occasions" || occasionFilter === "Birthday") && (
+        {/* {(occasionFilter === "All Occasions" || occasionFilter === "Birthday") && (
           <div className="notification-table-container">
             <h6 className="fw-semibold mb-3">🎁 Upcoming Birthdays <span className="badge bg-light text-dark">{filteredBirthdays.length}</span></h6>
             <div className="table-container">
@@ -212,7 +292,7 @@ const NotificationPage = () => {
               </table>
             </div>
           </div>
-        )}
+        )} */}
 
         {/*  Section */}
         {/* Customer List Section */}
@@ -236,7 +316,7 @@ const NotificationPage = () => {
                     <tr key={i}>
                       <td>
                         <div className="d-flex align-items-center">
-                          <div className="avatar bg-danger text-white me-2">{item.customerName?.charAt(0).toUpperCase()}
+                          <div className="avatar bg-info text-white me-2">{item.customerName?.charAt(0).toUpperCase()}
                           </div>
                           <div>
                             <strong>{item.customerName}</strong><br />
@@ -247,7 +327,7 @@ const NotificationPage = () => {
                       <td>{item.policyNumber}</td>
                       <td><FaPhone className="me-1" />{item.customerPhone}</td>
                       <td>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleWishClick(item, "Anniversary")}>Send Custom Messages</button>
+                        <button className="btn View__btn btn-sm" onClick={() => handleWishClick(item, "Anniversary")}>Send Custom Messages</button>
                       </td>
                     </tr>
                   ))}
@@ -258,7 +338,7 @@ const NotificationPage = () => {
         )}
 
         {/* Festival Section */}
-        {(occasionFilter === "All Occasions" || occasionFilter === "Festivals") && (
+        {/* {(occasionFilter === "All Occasions" || occasionFilter === "Festivals") && (
           <>
             <h6 className="fw-semibold text-dark mt-4">
               🎉 Festival Greetings <span className="badge bg-light text-dark">{filteredFestivals.length}</span>
@@ -274,9 +354,135 @@ const NotificationPage = () => {
                   </div>
                 </div>
               ))}
+              </div>
+              </>
+              )} */}
+
+        {/* Notification Logs Table */}
+       <div className="notification-logs-container mt-4 p-4 shadow-sm">
+  <h6 className="fw-semibold mb-3 text-primary">Notification Logs</h6>
+
+  {/* Tabs and Record Count */}
+  <div className="d-flex justify-content-between align-items-center mb-3">
+    <div className="tabs">
+      {["All", "Birthday", "Policy Due", "Custom"].map((tab) => (
+        <button
+          key={tab}
+          className={`tab-btn ${activeTab === tab ? "active" : ""}`}
+          onClick={() => setActiveTab(tab)}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+    <div className="records-count text-muted small">
+      {filteredLogs.length} records
+    </div>
+  </div>
+
+  {/* ✅ Striped & Bordered Table */}
+  <div className="table-container">
+    <table className="table table-striped table-bordered align-middle">
+      <thead className="table-light">
+        <tr>
+          <th>NAME & EMAIL</th>
+          <th>POLICY DETAILS</th>
+          <th>POLICY No.</th>
+          <th>CONTACT No.</th>
+          <th>OCCASION</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredLogs.map((log) => (
+          <tr key={log.id}>
+            <td>
+              <strong>{log.customerName}</strong>
+              <br />
+              <small className="text-muted">{log.customerEmail}</small>
+            </td>
+
+            <td>
+              <div>
+                <strong>{log.company || "LIC India"}</strong>
+                <br />
+                <small className="text-muted">
+                  {log.policyType || "Jeevan Anand Plan"}
+                </small>
+              </div>
+            </td>
+
+            <td>{log.policy}</td>
+            <td>
+              <FaPhone className="me-1 text-danger" />
+              {log.customerPhone}
+            </td>
+            <td>
+              {log.occasion === "Birthday" && <span>🎂 Birthday</span>}
+              {log.occasion === "Policy Due" && <span>📅 Policy Due</span>}
+              {log.occasion === "Custom" && <span>✉️ Custom</span>}
+            </td>
+            <td>
+              <button
+                className="btn View__btn btn-sm d-flex align-items-center gap-2"
+                onClick={() => handleViewLog(log)}
+              >
+                View Message
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+        {/* Log View Modal */}
+        <Modal show={showLogModal} onHide={() => setShowLogModal(false)} centered className="view-log-modal">
+          <Modal.Header closeButton>
+            <Modal.Title>
+              Message Details - <span className="text-dark">{selectedLog?.name}</span>
+            </Modal.Title>
+          </Modal.Header>
+
+          <Modal.Body>
+            {/* Message Box */}
+            <div className="message-box p-3 mb-4 rounded">
+              <strong className="d-block mb-2">Message Sent:</strong>
+              <p className="text-muted m-0">{selectedLog?.message}</p>
             </div>
-          </>
-        )}
+
+            {/* Details Grid */}
+            <div className="row g-3">
+              <div className="col-6">
+                <p className="mb-1 text-muted small">Date & Time:</p>
+                <p className="fw-semibold">{selectedLog?.dateTime}</p>
+              </div>
+              <div className="col-6">
+                <p className="mb-1 text-muted small">Status:</p>
+                <span className="badge status-badge px-3 py-2">
+                  ✅ {selectedLog?.status}
+                </span>
+              </div>
+              <div className="col-6">
+                <p className="mb-1 text-muted small">Occasion:</p>
+                <p className="fw-semibold">🎉 {selectedLog?.occasion}</p>
+              </div>
+              <div className="col-6">
+                <p className="mb-1 text-muted small">Policy:</p>
+                <p className="fw-semibold">{selectedLog?.policyNumber}</p>
+              </div>
+            </div>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <button className="btn btn-light w-100 close-btn" onClick={() => setShowLogModal(false)}>
+              Close
+            </button>
+          </Modal.Footer>
+        </Modal>
+
 
         {/* Modal */}
         <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -296,7 +502,7 @@ const NotificationPage = () => {
             <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
 <Button
   variant="dark"
-  onClick={() => handleSendMessage(selectedPerson, wishMessage)}
+  onClick={() => handleSendMessage(selectedPerson?.customerPhone, wishMessage)}
 >
   Send Message
 </Button>          </Modal.Footer>

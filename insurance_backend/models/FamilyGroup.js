@@ -5,9 +5,6 @@ const familyMemberSchema = new mongoose.Schema({
   relation: String,
   age: Number,
   dob: String,
-  occupation: String,
-  nomineeName: String,
-  nomineeRelation: String,
   status: { type: String, default: "Active" },
 });
 

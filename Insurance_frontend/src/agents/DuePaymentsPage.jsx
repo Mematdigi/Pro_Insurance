@@ -16,6 +16,7 @@ const DuePaymentsPage = () => {
 
   useEffect(() => {
     const customers = JSON.parse(localStorage.getItem("manualCustomers")) || [];
+    console.log("Loaded customers:", customers);
     const dueList = [];
 
     customers.forEach((cust) => {

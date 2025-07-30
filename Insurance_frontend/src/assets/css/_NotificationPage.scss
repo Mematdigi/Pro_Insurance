@@ -95,4 +95,139 @@
       }
     }
   }
+
+  .View__btn{
+    background: #6495ed;
+    border: none;
+    color: #ffff;
+    padding: 6px 20px;
+  }
+  .bg-info{
+    background: #6495ed !important;
+  }
+}
+
+
+// Logs Section Styling
+.notification-logs-container {
+   background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+ .tabs {
+  display: inline-flex; /* ✅ Prevent stretching full width */
+  background: #f0f6ff;
+  border-radius: 10px;
+  padding: 4px;
+  gap: 0; /* No gap to keep tabs connected */
+  border: 1px solid #e5e7eb;
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 8px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap; /* ✅ Prevents wrapping (fixes "Policy Due" split issue) */
+
+    &:hover {
+      background: rgba(37, 99, 235, 0.08);
+    }
+
+    &.active {
+      background: #fff;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+.records-count {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+  .table-container {
+    overflow-x: auto;
+
+    .table {
+    border: 1px solid #dee2e6; /* Light table border */
+    border-radius: 8px;
+    overflow: hidden;
+
+    th {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      border: 1px solid #dee2e6;
+    }
+
+    td {
+      font-size: 14px;
+      border: 1px solid #dee2e6;
+    }
+
+    tbody tr:nth-of-type(odd) {
+      background-color: #f8f9fa; /* Striped row color */
+    }
+
+    tbody tr:hover {
+      background-color: #f1f3f5; /* Hover highlight */
+    }
+  }
+  }
+}
+
+
+// Log View Modal
+.view-log-modal {
+  .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+    .modal-title {
+      font-weight: 600;
+      font-size: 18px;
+      color: #111827;
+    }
+  }
+
+  .message-box {
+    background: #f8fbff;
+    border: 1px solid #e0e7ff;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .row p {
+    margin: 0;
+  }
+
+  .status-badge {
+    background: #e0f7ef;
+    color: #059669;
+    font-size: 13px;
+    border-radius: 20px;
+  }
+
+  .close-btn {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    font-weight: 500;
+    border-radius: 8px;
+    &:hover {
+      background: #f3f4f6;
+    }
+  }
 }

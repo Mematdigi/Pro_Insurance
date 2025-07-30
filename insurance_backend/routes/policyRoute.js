@@ -74,6 +74,44 @@ router.get("/customer/:id", async (req, res) => {
   }
 });
 
+router.post("/policies", async (req, res) => {
+  try {
+    const newPolicy = new Policy(req.body);
+    await newPolicy.save();
+    res.status(201).json({ msg: "Policy added successfully" });
+  } catch (error) {
+    console.error("Error adding policy:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+router.get("/by-id/:policyId", async (req, res) => {
+  console.log("Fetching policy for member:", req.params.policyId);
+  try {
+    const policy = await Policy.findById(req.params.policyId ); // Ensure memberId is stored in Policy DB
+    if (!policy) return res.status(404).json(msg , "Policy not found for this member");
+    res.json(policy);
+  } catch (error) {
+    console.error("Error fetching policy:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+
+
+router.get("/check/:policyNumber", async (req, res) => {
+  try {
+    const policy = await Policy.findOne({ policyNumber: req.params.policyNumber });
+    if (policy) {
+      return res.status(200).json({ exists: true, policy });
+    }
+    return res.status(200).json({ exists: false });
+  } catch (error) {
+    console.error("Error checking policy:", error);
+    res.status(500).json({ msg: "Server error while checking policy" });
+  }
+});
+
 
 //----------------------------------------------
 

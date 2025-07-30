@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -7,55 +7,61 @@ import {
   faUsers,
   faShieldAlt,
   faFileInvoiceDollar,
-  faCoins,
   faDownload,
-  faGift,
   faSignOutAlt,
   faBars,
   faBuilding,
   faListAlt,
   faHistory,
   faExchangeAlt,
-  faBookOpen,
   faCalendarAlt,
-  faClock
+  faClock,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
   const { user } = useAuth();
-  const [isOpen, setIsOpen] = useState(true);
+  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(
+    JSON.parse(localStorage.getItem("sidebarOpen")) ?? initialOpen
+  );
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
+  const premiumDueCount = 5;
+  const notificationsCount = 12;
+
   const toggleDropdown = (label) => {
     setOpenDropdown(openDropdown === label ? null : label);
   };
 
+  // ✅ Toggle sidebar manually and persist state
+  const handleToggleSidebar = () => {
+    const newState = !isOpen;
+    setIsOpen(newState);
+    localStorage.setItem("sidebarOpen", JSON.stringify(newState));
+  };
+
+  // ✅ Handle responsiveness but do NOT auto-close sidebar
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
-        setIsOpen(true);
-      }
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Get insurance category from localStorage
-  const selectedCategory = localStorage.getItem("selectedInsuranceType");
+  const selectedCategory = localStorage.getItem("selectedInsuranceType") || "Life Insurance";
 
-  // Define all menus
   const generalInsuranceMenu = [
     { label: "Dashboard", path: "/agent/dashboard", icon: faTachometerAlt },
     { label: "Import Policy", path: "/agent/import-excel", icon: faFileInvoiceDollar },
     { label: "Add new Policy", path: "/agent/add-manual", icon: faListAlt },
-    { label: "Policy Alterations", path: "/agent/policy-alterations", icon: faExchangeAlt },
-    { label: "Premium Due", path: "/agent/due-payments", icon: faCalendarAlt },
     { label: "Company", path: "/agent/companies", icon: faBuilding },
     { label: "Customer List", path: "/agent/customers", icon: faUsers },
-    { label: "Notifications", path: "/agent/notification", icon: faDownload },
+    { label: "Policy Alterations", path: "/agent/policy-alterations", icon: faExchangeAlt },
+    { label: "Premium Due", path: "/agent/due-payments", icon: faCalendarAlt, badge: premiumDueCount },
+    { label: "Notifications", path: "/agent/notification", icon: faPlus, badge: notificationsCount },
     { label: "Logout", path: "/login", icon: faSignOutAlt },
   ];
 
@@ -72,17 +78,11 @@ const Sidebar = () => {
         { label: "Policy Alterations", path: "/agent/policy-alterations", icon: faExchangeAlt },
       ],
     },
-    {
-      label: "LIC Report",
-      icon: faBookOpen,
-      children: [
-        { label: "Premium Due", path: "/agent/due-payments", icon: faCalendarAlt },
-        { label: "Policy Calculator", path: "#", icon: faClock },
-      ],
-    },
     { label: "Company", path: "/agent/companies", icon: faBuilding },
     { label: "Customer List", path: "/agent/customers", icon: faUsers },
-    { label: "Notification", path: "/agent/notification", icon: faDownload },
+    { label: "Premium Due", path: "/agent/due-payments", icon: faCalendarAlt, badge: premiumDueCount },
+    { label: "Notifications", path: "/agent/notification", icon: faPlus, badge: notificationsCount },
+    { label: "Policy Calculator", path: "#", icon: faClock },
     { label: "Logout", path: "/login", icon: faSignOutAlt },
   ];
 
@@ -91,52 +91,45 @@ const Sidebar = () => {
     { label: "Add Polices", path: "/customer/addinsurance", icon: faDownload },
     { label: "Policies", path: "/customer/mypolicies", icon: faShieldAlt },
     { label: "Due Payments", path: "/customer/due-payments", icon: faFileInvoiceDollar },
+    { label: "Notifications", path: "/customer/notification", icon: faPlus, badge: notificationsCount },
     { label: "Logout", path: "/login", icon: faSignOutAlt },
   ];
 
-  // Final menu assignment
-  let menu;
-  if (user?.role === "Agent") {
-    menu = selectedCategory === "general" ? generalInsuranceMenu : lifeInsuranceMenu;
-  } else {
-    menu = customerMenu;
-  }
+  let menu = user?.role === "Agent"
+    ? selectedCategory === "General Insurance" ? generalInsuranceMenu : lifeInsuranceMenu
+    : customerMenu;
 
   return (
     <>
       {isMobile && (
         <button
           className="mobile-toggle-btn"
-          onClick={toggleSidebar}
-          style={{
-            left: isOpen ? "250px" : "15px",
-            transition: "left 0.3s ease"
-          }}
+          onClick={handleToggleSidebar}
+          style={{ left: isOpen ? "250px" : "15px", transition: "left 0.3s ease" }}
         >
           <FontAwesomeIcon icon={faBars} />
         </button>
       )}
-      <div
-        className={`sidebar-container ${isOpen ? "open" : "collapsed"} ${
-          isMobile && !isOpen ? "mobile-closed" : ""
-        }`}
-      >
+
+      <div className={`sidebar-container ${isOpen ? "open" : "collapsed"} ${isMobile && !isOpen ? "mobile-closed" : ""}`}>
         <div className="sidebar-header">
           {!isMobile && (
-            <button className="toggle-btn" onClick={toggleSidebar}>
+            <button className="toggle-btn" onClick={handleToggleSidebar}>
               <FontAwesomeIcon icon={faBars} />
             </button>
           )}
           {isOpen && <h3 className="logo-text">Insurance</h3>}
         </div>
 
+        {/* Menu List */}
         <ul className="menu-list">
           {menu.map((item, index) =>
             item.children ? (
-              <li key={index}>
+              <li key={index} className="tooltip-container">
                 <button
                   className={`dropdown-toggle ${openDropdown === item.label ? "open" : ""}`}
                   onClick={() => toggleDropdown(item.label)}
+                  data-tooltip={!isOpen ? item.label : ""}
                 >
                   <FontAwesomeIcon icon={item.icon} className="menu-icon" />
                   {isOpen && <span className="menu-label">{item.label}</span>}
@@ -144,8 +137,12 @@ const Sidebar = () => {
                 {openDropdown === item.label && isOpen && (
                   <ul className="submenu">
                     {item.children.map((child, cIdx) => (
-                      <li key={cIdx}>
-                        <NavLink to={child.path} className={({ isActive }) => (isActive ? "active" : "")}>
+                      <li key={cIdx} className="tooltip-container">
+                        <NavLink
+                          to={child.path}
+                          className={({ isActive }) => (isActive ? "active" : "")}
+                          data-tooltip={!isOpen ? child.label : ""}
+                        >
                           <FontAwesomeIcon icon={child.icon} className="menu-icon" />
                           {isOpen && <span className="menu-label">{child.label}</span>}
                         </NavLink>
@@ -155,10 +152,15 @@ const Sidebar = () => {
                 )}
               </li>
             ) : (
-              <li key={index}>
-                <NavLink to={item.path} className={({ isActive }) => (isActive ? "active" : "")}>
+              <li key={index} className="tooltip-container">
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                  data-tooltip={!isOpen ? item.label : ""}
+                >
                   <FontAwesomeIcon icon={item.icon} className="menu-icon" />
                   {isOpen && <span className="menu-label">{item.label}</span>}
+                  {item.badge && <span className="menu-badge">{item.badge}</span>}
                 </NavLink>
               </li>
             )
