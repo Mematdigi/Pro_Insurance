@@ -32,8 +32,9 @@ exports.checkOrCreateGroup = async (req, res) => {
 
 exports.addFamilyMember = async (req, res) => {
   const { groupId } = req.params;
-  const { name , relation, age, dob, occupation, nomineeName, nomineeRelation,} = req.body;
-  if (!groupId || !name || !relation || !age) {
+  const { name , relation, age, dob,} = req.body;
+  if (!groupId || !name|| !relation || !age) {
+    console.log("Missing required fields:", { groupId, name, relation, age });
     return res.status(400).json({ msg: "Missing required fields" });
   } 
   try {
@@ -42,9 +43,6 @@ exports.addFamilyMember = async (req, res) => {
       relation,
       age,
       dob,
-      occupation,
-      nomineeName,
-      nomineeRelation,
       status: "Active",
     };
     const group = await FamilyGroup.findOneAndUpdate(

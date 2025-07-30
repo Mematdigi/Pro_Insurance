@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const PolicySchema = new mongoose.Schema({
+  
   agentId: { type: mongoose.Schema.Types.ObjectId, ref: "Agent", required: true },
   agentCode: String,
   
