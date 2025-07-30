@@ -145,47 +145,52 @@ const CompanyPage = () => {
                 <h4 className="text-primary">₹{companyStats.reduce((a, b) => a + b.totalEarnings, 0).toLocaleString()}</h4>
               </div>
             </div>
-           
+            
           </div>
 
           {/* Filter + Delete UI */}
-          <div className="row align-items-end gy-3 gx-4 mb-4">
-            <label className="mb-1 fw-semibold">Filter by Company</label>
-            <div className="col-md-6 col-lg-6 d-flex gap-4">
-              <select
-                className="form-select"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ minWidth: "200px" }}
-              >
-                <option value="">-- All Companies --</option>
-                {companyStats.map((comp, i) => (
-                  <option key={i} value={comp.company}>
-                    {comp.company}
-                  </option>
-                ))}
-              </select>
-              <button className="btn btn-outline-secondary" onClick={() => setSearch("")}>
-                <i className="bi bi-x-circle me-1"></i> Reset
-              </button>
-            </div>
+          {/* Filter + Delete UI */}
+<div className="row align-items-end gy-3 gx-4 mb-4">
+  <div className="col-md-6 d-flex align-items-end gap-3">
+    <div className="d-flex flex-column">
+      <label className="mb-1 fw-semibold">Filter by Company</label>
+      <select
+        className="form-select"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ width: "220px" }} // ✅ Fixed width
+      >
+        <option value="">-- All Companies --</option>
+        {companyStats.map((comp, i) => (
+          <option key={i} value={comp.company}>
+            {comp.company}
+          </option>
+        ))}
+      </select>
+    </div>
 
-            <div className="col-md-6 col-lg-6 d-flex justify-content-md-end align-items-center gap-3">
-              <div className="form-check mb-0">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="selectAll"
-                  checked={selectAll}
-                  onChange={handleSelectAll}
-                />
-                <label className="form-check-label" htmlFor="selectAll">Select All</label>
-              </div>
-              <button className="btn btn-outline-danger" onClick={handleDeleteSelected}>
-                <i className="bi bi-trash me-1"></i> Delete Selected
-              </button>
-            </div>
-          </div>
+    <button className="btn btn-outline-secondary h-50 align-self-end" onClick={() => setSearch("")}>
+      <i className="bi bi-x-circle me-1"></i> Reset
+    </button>
+  </div>
+
+  <div className="col-md-6 d-flex justify-content-md-end align-items-center gap-3">
+    <div className="form-check mb-0">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="selectAll"
+        checked={selectAll}
+        onChange={handleSelectAll}
+      />
+      <label className="form-check-label" htmlFor="selectAll">Select All</label>
+    </div>
+    <button className="btn btn-outline-danger" onClick={handleDeleteSelected}>
+      <i className="bi bi-trash me-1"></i> Delete Selected
+    </button>
+  </div>
+</div>
+
 
           {/* Cards */}
           <div className="row g-4">

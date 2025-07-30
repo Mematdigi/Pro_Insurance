@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import generalIcon from "/public/General_insurance.png";
@@ -9,15 +8,14 @@ const InsuranceCategoryPage = () => {
   const navigate = useNavigate();
 
   const handleContinue = () => {
-  if (selected) {
-    // Store the full label for consistency with Excel data
-    const selectedLabel = selected === "life" ? "Life Insurance" : "General Insurance";
-    localStorage.setItem("selectedInsuranceCategory", selectedLabel);
+    if (selected) {
+      // Store under correct key used in Sidebar
+      const selectedLabel = selected === "life" ? "Life Insurance" : "General Insurance";
+      localStorage.setItem("selectedInsuranceType", selectedLabel); // ✅ Corrected key
 
-    navigate("/agent/dashboard");
-  }
-};
-
+      navigate("/agent/dashboard");
+    }
+  };
 
   return (
     <div className="insurance-category-page container">
@@ -34,9 +32,7 @@ const InsuranceCategoryPage = () => {
         >
           <img src={generalIcon} alt="General Insurance" className="category-img" />
           <h5>General Insurance</h5>
-          <p>
-            Protect your assets and health with comprehensive coverage for everyday risks.
-          </p>
+          <p>Protect your assets and health with comprehensive coverage for everyday risks.</p>
           <small className="text-muted">Vehicle, Health, Travel, Property Insurance</small>
         </div>
 
@@ -46,9 +42,7 @@ const InsuranceCategoryPage = () => {
         >
           <img src={lifeIcon} alt="Life Insurance" className="category-img" />
           <h5>Life Insurance</h5>
-          <p>
-            Secure your family’s financial future with long-term life protection plans.
-          </p>
+          <p>Secure your family’s financial future with long-term life protection plans.</p>
           <small className="text-muted">Term Life, Whole Life, ULIP, Endowment Plans</small>
         </div>
       </div>
@@ -61,7 +55,6 @@ const InsuranceCategoryPage = () => {
         >
           Continue to Dashboard
         </button>
-        
       </div>
 
       <div className="footnotes mt-4 text-center text-muted">
