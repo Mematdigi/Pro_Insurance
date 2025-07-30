@@ -71,6 +71,8 @@ class notificationController {
         customerName: n.policyId?.customerName || "N/A",
         customerEmail: n.policyId?.customerEmail || "N/A",
         customerPhone: n.policyId?.customerPhone || "N/A",
+        company: n.policyId?.company || "N/A",
+        policyType: n.policyId?.policyType || "N/A",
         occasion: n.occasion || "N/A"
       }));
 
