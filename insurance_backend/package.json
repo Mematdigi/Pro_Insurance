@@ -26,6 +26,7 @@
     "npm": "^11.4.2",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^5.4.54",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
