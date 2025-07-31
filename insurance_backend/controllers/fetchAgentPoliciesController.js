@@ -1,4 +1,4 @@
-const Policy = require("../models/Policy");
+const Policy = require("../models/AgentPolicies");
 
 const fetchAgentPoliciesController = async (req, res) => {
   console.log("🔥 Agent fetchPolicy route hit!");

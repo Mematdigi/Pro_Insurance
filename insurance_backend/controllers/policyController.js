@@ -1,4 +1,4 @@
-const Policy = require('../models/Policy');
+const Policy = require('../models/AgentPolicies');
 const mongoose = require('mongoose');
 
 const getPoliciesByAgent = async (req, res) => {

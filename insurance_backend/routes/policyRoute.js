@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Policy = require('../models/Policy');
+const Policy = require('../models/AgentPolicies');
 const fetchAgentPolicies = require('../controllers/fetchAgentPoliciesController');
 const { getPoliciesByAgent, getInsuranceByCategory,getCoustomerPolicyList} = require('../controllers/policyController');
 const addPolicy = require('../controllers/addPolicyController');

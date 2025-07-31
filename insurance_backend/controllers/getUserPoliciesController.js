@@ -1,4 +1,4 @@
-const Policy = require('../models/Policy');
+const Policy = require('../models/AgentPolicies');
 
 const getUserPoliciesController = async (req, res) => {
   const userId = req.query.userId || req.user?.id;
