@@ -31,7 +31,7 @@ const NotificationPage = () => {
     setShowModal(true);
   };
 
-  const handleSendMessage = async (phoneNumber, message) => {
+  const handleSendMessage = async (person, message) => {
     try {
       const res = await fetch("http://localhost:5000/v1/notification/send-notification", {
         method: "POST",
@@ -40,7 +40,9 @@ const NotificationPage = () => {
         },
         body: JSON.stringify({
           message: message,
-          phone: phoneNumber
+          phone: person.customerPhone,
+          agentId: person.agentId,
+          policyId: person._id || null
         })
       });
      
@@ -120,52 +122,53 @@ const NotificationPage = () => {
 
   // Log Filter Conditions
 
-  // Add Logs State
+  // let logs = []; // Initialize logs state
+  // Add Logs Stat
 // Logs Data
-  const [logs] = useState([
+   const [logs] = useState([
     {
       id: 1,
-      name: "John Doe",
-      email: "john.doe@email.com",
-      phone: "+1 234 567 8900",
+      customerName: "John Doe",
+      customerEmail: "john.doe@email.com",
+      customerPhone: "+1 234 567 8900",
       message: "Happy Birthday! 🎉 Wishing you joy and prosperity.",
       dateTime: "2024-07-29 10:30 AM",
       status: "Success",
       occasion: "Birthday",
-      policy: "POL-2024-001",
+      policyNumber: "POL-2024-001",
     },
     {
       id: 2,
-      name: "Sarah Johnson",
-      email: "sarah.j@email.com",
-      phone: "+1 234 567 8901",
+      customerName: "Sarah Johnson",
+      customerEmail: "sarah.j@email.com",
+      customerPhone: "+1 234 567 8901",
       message: "Policy Due Reminder! Please renew to avoid lapse.",
       dateTime: "2024-07-28 09:00 AM",
       status: "Success",
       occasion: "Policy Due",
-      policy: "POL-2024-002",
+      policyNumber: "POL-2024-002",
     },
     {
       id: 3,
-      name: "Mike Wilson",
-      email: "mike.w@email.com",
-      phone: "+1 234 567 8902",
+      customerName: "Mike Wilson",
+      customerEmail: "mike.w@email.com",
+      customerPhone: "+1 234 567 8902",
       message: "Custom message sent successfully.",
       dateTime: "2024-07-27 04:15 PM",
       status: "Success",
       occasion: "Custom",
-      policy: "POL-2024-003",
+      policyNumber: "POL-2024-003",
     },
     {
       id: 4,
-      name: "Emily Davis",
-      email: "emily.davis@email.com",
-      phone: "+1 234 567 8903",
+      customerName: "Emily Davis",
+      customerEmail: "emily.davis@email.com",
+      customerPhone: "+1 234 567 8903",
       message: "Happy Birthday Emily! 🎂",
       dateTime: "2024-07-26 08:45 AM",
       status: "Success",
       occasion: "Birthday",
-      policy: "POL-2024-004",
+      policyNumber: "POL-2024-004",
     },
   ]);
 
@@ -176,6 +179,15 @@ const NotificationPage = () => {
 
   // Handle Tab Filter
   useEffect(() => {
+            const agent = user || JSON.parse(localStorage.getItem("user"));
+          if (!agent?.id) {
+            console.warn("❌ Agent ID not found.");
+            return;
+          }
+
+      // //  logs = await fetch(`http://localhost:5000/v1/notification/fetch-notification/${agent.id}`);
+      // const data = await logs.json();
+      // console.log("Logs Data:", data);
     if (activeTab === "All") {
       setFilteredLogs(logs);
     } else {
@@ -385,9 +397,9 @@ const NotificationPage = () => {
         {filteredLogs.map((log) => (
           <tr key={log.id}>
             <td>
-              <strong>{log.name}</strong>
+              <strong>{log.customerName}</strong>
               <br />
-              <small className="text-muted">{log.email}</small>
+              <small className="text-muted">{log.customerEmail}</small>
             </td>
 
             <td>
@@ -395,7 +407,7 @@ const NotificationPage = () => {
                 <strong>{log.company || "LIC India"}</strong>
                 <br />
                 <small className="text-muted">
-                  {log.policyName || "Jeevan Anand Plan"}
+                  {log.policyType || "Jeevan Anand Plan"}
                 </small>
               </div>
             </td>
@@ -403,7 +415,7 @@ const NotificationPage = () => {
             <td>{log.policy}</td>
             <td>
               <FaPhone className="me-1 text-danger" />
-              {log.phone}
+              {log.customerPhone}
             </td>
             <td>
               {log.occasion === "Birthday" && <span>🎂 Birthday</span>}
@@ -459,7 +471,7 @@ const NotificationPage = () => {
               </div>
               <div className="col-6">
                 <p className="mb-1 text-muted small">Policy:</p>
-                <p className="fw-semibold">{selectedLog?.policy}</p>
+                <p className="fw-semibold">{selectedLog?.policyNumber}</p>
               </div>
             </div>
           </Modal.Body>
@@ -488,14 +500,12 @@ const NotificationPage = () => {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button
-              variant="dark"
-              onClick={() => handleSendMessage(selectedPerson?.customerPhone, wishMessage)}
-            >
-              Send Message
-            </Button>         
-            
-           </Modal.Footer>
+<Button
+  variant="dark"
+  onClick={() => handleSendMessage(selectedPerson?.customerPhone, wishMessage)}
+>
+  Send Message
+</Button>          </Modal.Footer>
         </Modal>
 
         {/* Toast */}

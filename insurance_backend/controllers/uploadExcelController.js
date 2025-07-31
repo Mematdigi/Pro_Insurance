@@ -1,6 +1,6 @@
 const XLSX = require("xlsx");
 const fs = require("fs");
-const Policy = require("../models/Policy");
+const Policy = require("../models/AgentPolicies");
 const  mongoose  = require("mongoose");  
 
 const uploadExcelController = async (req, res) => {

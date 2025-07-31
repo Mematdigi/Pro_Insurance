@@ -1,5 +1,5 @@
 const { mongoose } = require("mongoose");
-const Policy = require("../models/Policy");
+const Policy = require("../models/AgentPolicies");
 
 const manualPolicyController = async (req, res) => {
   try {

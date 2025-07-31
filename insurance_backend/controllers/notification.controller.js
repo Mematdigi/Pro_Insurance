@@ -1,13 +1,12 @@
 
-const Policy = require('../models/Policy');
+const Policy = require('../models/AgentPolicies');
 const dayjs = require('dayjs');
 const { sendSms } = require('../services/twilio.services');
 const saveNotification = require('../utils/helperFunction'); // Import save function
 const Notification = require("../models/Notification");  // Ensure correct model is used
 
 class notificationController {
-
-  sendNotification = async (req, res) => {
+sendNotification = async (req, res) => {
     try {
       const { message, phone,agentId, policyId } = req.body;
 
@@ -71,6 +70,8 @@ class notificationController {
         customerName: n.policyId?.customerName || "N/A",
         customerEmail: n.policyId?.customerEmail || "N/A",
         customerPhone: n.policyId?.customerPhone || "N/A",
+        company: n.policyId?.company || "N/A",
+        policyType: n.policyId?.policyType || "N/A",
         occasion: n.occasion || "N/A"
       }));
 
