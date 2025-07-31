@@ -667,147 +667,160 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: url("/public/Login_background.jpg");
-  background-position: center;
-  background-repeat: no-repeat;
+  background: url("./public/Login_background.jpg") no-repeat center center; /* ✅ Change to your image path */
   background-size: cover;
-  font-family: "Poppins", sans-serif;
-  padding: 30px;
+  font-family: "Inter", sans-serif;
+  padding: 20px;
+  position: relative;
 }
-.login-page .login-box {
-  background: #ffffff;
+
+/* Optional: Add an overlay for better contrast */
+.login-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3); /* dark overlay */
+  z-index: 0;
+}
+
+/* Ensure the card stays above the overlay */
+.login-card {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.95); /* Slight transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   padding: 2rem;
   width: 100%;
-  max-width: 400px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 420px;
   text-align: center;
 }
-.login-page .login-box .logo-section .icon-shield {
+
+.logo-section .icon-shield {
   font-size: 2rem;
   margin-bottom: 0.5rem;
-}
-.login-page .login-box .logo-section h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #111827;
-}
-.login-page .login-box .logo-section .subtitle {
-  font-size: 0.9rem;
-  color: #6b7280;
-}
-.login-page .login-box .demo-box {
-  background: #e0f2fe;
-  border-radius: 8px;
-  padding: 0.75rem;
-  text-align: left;
-  font-size: 0.85rem;
-  margin: 1.5rem 0;
-}
-.login-page .login-box .demo-box p {
-  margin: 0.25rem 0;
-}
-.login-page .login-box form {
-  text-align: left;
-}
-.login-page .login-box form .role-toggle {
-  display: flex;
-  margin-bottom: 1rem;
-}
-.login-page .login-box form .role-toggle button {
-  flex: 1;
-  padding: 0.5rem 0;
-  border: 1px solid #ccc;
-  background: #fff;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 6px 6px 0 0;
-  transition: 0.2s;
-}
-.login-page .login-box form .role-toggle button.active {
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-}
-.login-page .login-box form .role-toggle button:not(:last-child) {
-  margin-right: 0.5rem;
-}
-.login-page .login-box form label {
-  font-size: 0.85rem;
-  color: #374151;
-  margin-bottom: 0.25rem;
-  display: block;
-}
-.login-page .login-box form input {
-  width: 100%;
-  padding: 0.65rem 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-.login-page .login-box form .sign-in-btn {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  width: 100%;
-  padding: 0.75rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-.login-page .login-box form .sign-in-btn:hover {
-  background: #2563eb;
-}
-.login-page .login-box form .bottom-note {
-  font-size: 0.85rem;
-  text-align: center;
-  margin-top: 1rem;
-}
-.login-page .login-box form .bottom-note a {
-  color: #10b981;
-  text-decoration: none;
-}
-.login-page .login-box form .bottom-note a:hover {
-  text-decoration: underline;
-}
-@media (max-width: 480px) {
-  .login-page .login-box {
-    padding: 1.5rem;
-  }
 }
 
 .role-toggle {
   display: flex;
-  background: #f3f4f6;
+  background: #e0f0ff;
   border-radius: 8px;
-  padding: 4px;
-  margin-bottom: 1rem;
+  margin: 1rem 0;
 }
+
 .role-toggle button {
   flex: 1;
-  background: none;
   border: none;
-  padding: 0.6rem 1rem;
-  font-weight: 500;
-  color: #6b7280;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  background: none;
+  padding: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
   transition: 0.3s;
-  font-size: 0.95rem;
+}
+
+.role-toggle .active {
+  background: #007bff;
+  color: #fff;
+  border-radius: 8px;
+}
+
+label {
+  display: block;
+  text-align: left;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-top: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.password-field {
+  position: relative;
+}
+
+.toggle-eye {
+  position: absolute;
+  right: 10px;
+  top: 10px;
   cursor: pointer;
 }
-.role-toggle button i {
-  font-size: 14px;
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  gap: 10px; /* add spacing consistency */
 }
-.role-toggle button.active {
-  background: #ffffff;
-  color: #111827;
-  box-shadow: 0 0 0 1px #e5e7eb;
+.login-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* space between checkbox and text */
+  margin: 0;
+  white-space: nowrap;
+}
+.login-options .otp-link {
+  margin-left: auto; /* push link to far right neatly */
+  color: #007bff;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.login-options .otp-link:hover {
+  color: #005dc1;
+  text-decoration: underline;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s;
+}
+
+.login-btn:hover {
+  background: #005dc1;
+}
+
+.otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.otp-inputs input {
+  width: 40px;
+  height: 50px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.timer, .resend-links, .back-link {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.resend-links span, .back-link {
+  color: #007bff;
+  cursor: pointer;
 }
 
 .sidebar-container {
