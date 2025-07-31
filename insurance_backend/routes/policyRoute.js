@@ -5,6 +5,7 @@ const fetchAgentPolicies = require('../controllers/fetchAgentPoliciesController'
 const { getPoliciesByAgent, getInsuranceByCategory,getCoustomerPolicyList} = require('../controllers/policyController');
 const addPolicy = require('../controllers/addPolicyController');
 const getPolicies = require('../controllers/getUserPoliciesController');
+const mongoose = require("mongoose");
 
 const upload = require("../middleware/upload");
 const uploadExcelController = require("../controllers/uploadExcelController");
@@ -60,6 +61,29 @@ router.get('/due', async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching due payments:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get("/due-next-month/:agentId", async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    console.log ("Fetching due payments for agent:", agentId);
+    const today = new Date();
+    const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1); // Start of next month
+    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0); // End of next month
+    const policies = await Policy.find({ agentId :new mongoose.Types.ObjectId(agentId)});
+    console.log("Policies fetched for agent:", policies.length);
+    console.log("sample policy:", policies[0]);
+    
+    const duePolicies = policies.filter((policy) => {
+      if (!policy.policyDetails?.endDate) return false; // Skip policies without endDate
+      const endDate = new Date(policy.policyDetails.endDate);
+      return (endDate >= nextMonthStart && endDate <= nextMonthEnd);
+    });
+    res.json(duePolicies);
+  } catch (error) {
+    console.error("❌ Error fetching due payments for next month:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

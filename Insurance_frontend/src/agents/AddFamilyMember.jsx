@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FaSearch, FaEye, FaArrowLeft } from "react-icons/fa";
 
+
 const AddFamilyMember = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -14,6 +15,7 @@ const AddFamilyMember = () => {
   const [memberQuery, setMemberQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showPolicyForm, setShowPolicyForm] = useState(false);
+  const [isPolicyFetched, setIsPolicyFetched] = useState(false);
 
   const [form, setForm] = useState({
     policyNumber: "",
@@ -50,24 +52,41 @@ const AddFamilyMember = () => {
   };
 
   const handleSearchCustomer = async () => {
-    if (searchCustomer.name && searchCustomer.policyNumber) {
-      try {
-        const res = await fetch("http://localhost:5000/api/family/checkOrCreate", {
+    try {
+      const policyNumber = searchCustomer.policyNumber.trim();
+      const customerName = searchCustomer.name.trim();
+      if (!policyNumber || !customerName) {
+        alert("Please enter both policy number and customer name.");
+        return;
+      }
+      const res = await fetch(`http://localhost:5000/api/family/check-policy/${policyNumber}`);
+      const data = await res.json();
+
+      if (!data.exists) {
+        alert("Policy not found. Please check the policy number.");
+        return;
+      }
+      const primaryHolderName = data.policy?.customerName || searchCustomer.name;
+      const primaryPolicyNumber = data.policy?.policyNumber || searchCustomer.policyNumber;
+
+      if (primaryHolderName && primaryPolicyNumber) {
+        const createRes = await fetch("http://localhost:5000/api/family/checkOrCreate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            
             agentId: user?.id,
-            primaryHolder: searchCustomer.name,
-            policyNumber: searchCustomer.policyNumber,
+            primaryHolder: primaryHolderName,
+            policyNumber: primaryPolicyNumber,
           }),
         });
 
-        const data = await res.json();
-        if (res.ok) {
-          setGroupId(data.groupId);
+        const createData = await createRes.json();
+        if (createRes.ok) {
+          setGroupId(createData.groupId);
           setFormSubmitted(true);
 
-          const memberRes = await fetch(`http://localhost:5000/api/family/group/${data.groupId}`);
+          const memberRes = await fetch(`http://localhost:5000/api/family/group/${createData.groupId}`);
           const memberData = await memberRes.json();
 
           if (memberRes.ok) {
@@ -75,18 +94,18 @@ const AddFamilyMember = () => {
           }
           setForm((prev) => ({
             ...prev,
-            primaryHolder: searchCustomer.name,
-            policyNumber: searchCustomer.policyNumber,
+            primaryHolder: primaryHolderName,
+            policyNumber: primaryPolicyNumber,
           }));
         } else {
-          alert("❌ " + (data.msg || "Failed to fetch or create group"));
+          alert("❌ " + (createData.msg || "Failed to fetch or create group"));
         }
-      } catch (err) {
-        console.error("Search error:", err);
-        alert("Server error");
+      } else {
+        alert("Please provide valid primary holder name and policy number.");
       }
-    } else {
-      alert("Please fill in both fields.");
+    } catch (error) {
+      console.error("Error searching customer:", error);
+      alert("❌ Failed to search customer. Please try again.");
     }
   };
 
@@ -127,7 +146,6 @@ const AddFamilyMember = () => {
   };
 
   const handleSavePolicy = async () => {
-  // ✅ Validate required fields before proceeding
   if (!form.memberName || !form.relation || !form.age) {
     alert("Please fill Member Name, Relation, and Age before saving.");
     return;
@@ -140,13 +158,12 @@ const AddFamilyMember = () => {
   try {
     // 1️⃣ Save Member in FamilyGroup
     const memberPayload = {
+      agentId: user?.id,
       name: form.memberName,
       relation: form.relation,
       age: form.age,
       dob: form.dob || ""
     };
-
-    console.log("🚀 Sending Member Payload:", memberPayload);
 
     const memberRes = await fetch(`http://localhost:5000/api/family/add/${groupId}`, {
       method: "POST",
@@ -156,42 +173,46 @@ const AddFamilyMember = () => {
 
     const memberData = await memberRes.json();
     if (!memberRes.ok) {
-      console.error("Error saving member:", memberData);
       alert(memberData.msg || "Failed to save member.");
       return;
     }
-    console.log("✅ Member saved:", memberData);
 
     // 2️⃣ Check if Policy already exists
     const checkRes = await fetch(`http://localhost:5000/api/check/${policyForm.policyNumber}`);
     const checkData = await checkRes.json();
+
     if (checkRes.ok && checkData.exists) {
-      alert("⚠️ Policy already exists in the database!");
+      // ✅ Policy exists: Add member successfully without policy save
+      alert("✅ Member added successfully!");
+
+      // 🔄 Fetch updated family members dynamically
+      const updatedMembers = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
+      const updatedData = await updatedMembers.json();
+      if (updatedMembers.ok) {
+        setFamilyList(updatedData.familyMembers || []);
+      }
       return;
     }
 
-    // 3️⃣ Prepare Policy Payload matching schema
+    // 3️⃣ Policy does not exist → Save new policy
     const policyPayload = {
       policyNumber: policyForm.policyNumber,
-      customerName: policyForm.policyHolderName,      // maps to customerName
-      customerPhone: policyForm.contact,             // maps to customerPhone
-      customerEmail: policyForm.email || "",         // optional but included
+      customerName: policyForm.policyHolderName,
+      customerPhone: policyForm.contact,
+      customerEmail: policyForm.email || "",
       company: policyForm.company,
-      insuranceType: policyForm.category,            // maps insurance type
+      insuranceType: policyForm.category,
       policyType: policyForm.type,
-      agentId: user?.id,                              // agent ID from auth context
+      agentId: user?.id,
       policyDetails: {
         premium: Number(policyForm.premium),
         paymentMode: policyForm.paymentMode,
         startDate: policyForm.startDate,
-        endDate: policyForm.maturityDate,           // maturityDate -> endDate
+        endDate: policyForm.maturityDate,
         branch: policyForm.branch,
       }
     };
 
-    console.log("🚀 Sending Policy Payload:", policyPayload);
-
-    // 4️⃣ Save Policy in Policy DB
     const policyRes = await fetch("http://localhost:5000/api/policies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -200,20 +221,26 @@ const AddFamilyMember = () => {
 
     const policyData = await policyRes.json();
     if (!policyRes.ok) {
-      console.error("Error saving policy:", policyData);
       alert(policyData.msg || "Failed to save policy.");
       return;
     }
 
-    console.log("✅ Policy saved:", policyData);
-    alert("Member and Policy saved successfully!");
+    alert("✅ Member and Policy saved successfully!");
+
+    // 🔄 Refresh members table
+    const updatedMembers = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
+    const updatedData = await updatedMembers.json();
+    if (updatedMembers.ok) {
+      setFamilyList(updatedData.familyMembers || []);
+    }
 
   } catch (error) {
     console.error("❌ Error saving policy:", error);
     alert("Unexpected error occurred while saving policy.");
   }
 };
-  const handleDelete = (index) => {
+
+const handleDelete = (index) => {
     const updated = [...familyList];
     updated.splice(index, 1);
     setFamilyList(updated);
@@ -338,6 +365,7 @@ const AddFamilyMember = () => {
                                           maturityDate: data.policyDetails.endDate || "",
                                           branch: ""
                                         });
+                                        setIsPolicyFetched(true);
                                       } else {
                                         setPolicyForm((prev) => ({
                                           ...prev,
@@ -386,18 +414,76 @@ const AddFamilyMember = () => {
                         <input type="text" name="policyHolderName" placeholder="Enter policy holder name" value={policyForm.policyHolderName} onChange={handlePolicyChange} />
                         <input type="text" name="contact" placeholder="Enter contact number" value={policyForm.contact} onChange={handlePolicyChange} />
                         <input type="email" name="email" placeholder="Enter email address" value={policyForm.email} onChange={handlePolicyChange} />
-                        <select name="company" value={policyForm.company} onChange={handlePolicyChange}>
-                          <option value="">Select insurance company</option><option>LIC</option><option>HDFC Life</option>
+                        {isPolicyFetched ? (
+                          <select name="company" defaultValue={policyForm.company} disabled>
+                            <option value={policyForm.company}>{policyForm.company || "Fetching..."}</option>
+                          </select>
+                        ) : (
+                          <select name="company" value={policyForm.company} onChange={handlePolicyChange}>
+                            <option value="">Select insurance company</option>
+                            <option value="LIC">LIC</option>
+                            <option value="HDFC Life">HDFC Life</option>
+                            <option value="SBI Life">SBI Life</option>
+                            <option value="Tata AIA">Tata AIA</option>
+                          </select>
+                        )}
+
+                        {/* Category Dropdown */}
+                        {isPolicyFetched ? (
+                          <select name="category" defaultValue={policyForm.category} disabled>
+                            <option value={policyForm.category}>{policyForm.category || "Fetching..."}</option>
+                          </select>
+                        ) : (
+                          <select name="category" value={policyForm.category} onChange={handlePolicyChange}>
+                            <option value="">Select insurance category</option>
+                            <option value="Life Insurance">Life Insurance</option>
+                            <option value="General Insurance">General Insurance</option>
+                          </select>
+                        )}
+
+                        {/* Type Dropdown */}
+                        {isPolicyFetched ? (
+                          <select name="type" defaultValue={policyForm.type} disabled>
+                            <option value={policyForm.type}>{policyForm.type || "Fetching..."}</option>
+                          </select>
+                        ) : (
+                          <select name="type" value={policyForm.type} onChange={handlePolicyChange}>
+                            <option value="">Select insurance type</option>
+                            <option value="Term">Term</option>
+                            <option value="ULIP">ULIP</option>
+                            <option value="Endowment">Endowment</option>
+                          </select>
+                        )}
+
+
+
+                        {/*
+                        <select name="company" value={policyForm.company|| ""}  disabled = {isPolicyFetched} >
+                          {!isPolicyFetched && <option value="">Select insurance company</option>}
+                          <option value="LIC">LIC</option>
+                          <option value="HDFC Life">HDFC Life</option>
+                          <option value="SBI Life">SBI Life</option>
+                          <option value="Tata AIA">Tata AIA</option>
                         </select>
-                        <select name="category" value={policyForm.category} onChange={handlePolicyChange}>
-                          <option value="">Select insurance category</option><option>Life Insurance</option><option>General Insurance</option>
+                        <select name="category" value={policyForm.category} onChange={handlePolicyChange} >
+                          {!isPolicyFetched && <option value="">Select insurance Category</option>}
+                          <option value="General Insurance">General Insurance</option>
+                          <option value="Life Insurance">Life Insurance</option>
+                          <option value={policyForm.category}>{policyForm.category || "Fetching..."}</option>
                         </select>
-                        <select name="type" value={policyForm.type} onChange={handlePolicyChange}>
-                          <option value="">Select insurance type</option><option>Term</option><option>ULIP</option>
+                        <select name="type" value={policyForm.type} onChange={handlePolicyChange} >
+                          {!isPolicyFetched && <option value="">Select insurance type</option>}
+                          <option value="Term">Term</option>
+                          <option value="ULIP">ULIP</option>
+                          <option value="Endowment">Endowment</option>
+                          <option value={policyForm.type}>{policyForm.type || "Fetching..."}</option>
                         </select>
+                        */}
                         <input type="text" name="premium" placeholder="Enter premium amount" value={policyForm.premium} onChange={handlePolicyChange} />
                         <select name="paymentMode" value={policyForm.paymentMode} onChange={handlePolicyChange}>
-                          <option value="">Select payment mode</option><option>Monthly</option><option>Yearly</option>
+                          <option value="">Select payment mode</option>
+                          <option>Monthly</option>
+                          <option>Yearly</option>
                         </select>
                         <input type="date" name="startDate" value={policyForm.startDate} onChange={handlePolicyChange} />
                         <input type="date" name="maturityDate" value={policyForm.maturityDate} onChange={handlePolicyChange} />
