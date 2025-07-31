@@ -1,8 +1,8 @@
 
 const Policy = require('../models/AgentPolicies');
 const dayjs = require('dayjs');
-const { sendSms } = require('../services/twilio.services');
-const saveNotification = require('../utils/helperFunction'); // Import save function
+const { sendSms, } = require('../services/twilio.services');
+const {saveNotification,formatTimeToAmPm} = require('../utils/helperFunction'); // Import save function
 const Notification = require("../models/Notification");  // Ensure correct model is used
 
 class notificationController {
@@ -16,9 +16,15 @@ sendNotification = async (req, res) => {
       console.log(`📩 Sending SMS to ${phone}: ${message}`);
 
       // Simulate SMS sending (replace with actual sendSms logic)
-      const smsSent = true; // await sendSms(phone, message);
+      // const smsSent = true; 
 
-      if (smsSent) {
+   const smsSent =    await sendWhatsAppMessage(phone, message);
+
+res.json({
+          message: "Message sent successfully",
+        });     
+        
+        if (smsSent) {
         // Save notification in DB
         await saveNotification(agentId, policyId, message, finalOccasion);
 
@@ -61,18 +67,22 @@ sendNotification = async (req, res) => {
       const notifications = await Notification.find(query)
         .populate({
           path: "policyId",
-          select: "customerName customerEmail customerPhone" // only these fields
+          select: "customerName customerEmail customerPhone policyType company policyNumber" // only these fields
         })
         .sort({ createdAt: -1 });
 
       // Map notifications to desired format
       const formattedData = notifications.map(n => ({
+        notificationId: n._id,
         customerName: n.policyId?.customerName || "N/A",
         customerEmail: n.policyId?.customerEmail || "N/A",
         customerPhone: n.policyId?.customerPhone || "N/A",
         company: n.policyId?.company || "N/A",
         policyType: n.policyId?.policyType || "N/A",
-        occasion: n.occasion || "N/A"
+        occasion: n.occasion || "N/A",
+        createdAt: formatTimeToAmPm(n.createdAt) || "N/A",
+        policyNumber: n.policyId?.policyNumber || "N/A",
+        message: n.message || "N/A"
       }));
 
       res.json({
