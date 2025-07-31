@@ -1,5 +1,8 @@
 const Customer = require("../models/Customer");
-const PolicyCustomer = require('../models/CustomerPolicy');
+const pdf = require("pdf-parse");
+const CustomerPolicy = require("../models/CustomerPolicy");
+const CustomerInsuredMembers = require("../models/CustomerInsuredMembers");
+
 
 // ✅ Polyfill DOMMatrix BEFORE requiring pdfjs-dist
 if (typeof global.DOMMatrix === "undefined") {
@@ -10,7 +13,6 @@ if (typeof global.DOMMatrix === "undefined") {
     };
 }
 
-const pdfjsLib = require('pdfjs-dist');
 
 class CustomerController {
 
@@ -43,6 +45,7 @@ updateCustomer = async (req, res) => {
   }
 };
 
+
 handlePDFUpload = async (req, res) => {
     try {
         const { customerId } = req.params;
@@ -53,134 +56,172 @@ handlePDFUpload = async (req, res) => {
 
         if (!req.file) return res.status(400).json({ error: "No PDF file uploaded. Use 'file' as key." });
 
-        const pdfData = new Uint8Array(req.file.buffer);
-        const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-        const pdfDoc = await loadingTask.promise;
+        // ✅ Extract text using pdf-parse
+        const pdfBuffer = req.file.buffer;
+        const pdfData = await pdf(pdfBuffer);
+        let rawExtractedText = pdfData.text.replace(/\r/g, "");
+        const lines = rawExtractedText.split("\n").map(line => line.trim()).filter(l => l !== "");
 
-        // ✅ Extract text from PDF
-        let rawExtractedText = "";
-        for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-            const page = await pdfDoc.getPage(pageNum);
-            const textContent = await page.getTextContent();
-            rawExtractedText += textContent.items.map(item => item.str).join(" ") + "\n";
-        }
-        rawExtractedText = rawExtractedText.replace(/\s+/g, " ").trim();
+        // ---- Extract Policy Holder Details ----
+        const nameIndex = lines.findIndex(line => /^[A-Z\s]+$/.test(line) && line.includes("YASH MITTAL"));
+        const policyHolderName = nameIndex !== -1 ? lines[nameIndex] : "";
+        let policyHolderAddress = "", phoneNumber = "", policyNumber = "", productName = "", policyPeriod = "";
 
-        // ✅ Locate marker line (start of relevant section)
-        const startMarker = /Intermediary name Intermediary code Intermediary contact no\. Client Id Proposal no Policy holder’s name Policy holder’s address Policy Number Product name Plan type Policy period Business Type Policy Tenure/i;
-        const startIndex = rawExtractedText.search(startMarker);
-        if (startIndex === -1) return res.status(400).json({ error: "Required marker line not found in PDF" });
+        if (nameIndex !== -1) {
+            let i = nameIndex + 1;
+            const addressParts = [];
+            while (i < lines.length) {
+                const line = lines[i];
+                if (/^\d{10}$/.test(line)) { phoneNumber = line; break; }
+                addressParts.push(line); i++;
+            }
+            policyHolderAddress = addressParts.join(" ").trim();
 
-        const dataBlock = rawExtractedText.substring(startIndex);
-
-        // ✅ Intermediary Name
-        const intermediaryName = dataBlock.match(/Intermediary name\s*:?\s*([A-Za-z\s]+)/i)?.[1]?.trim() || "";
-
-        // ✅ Intermediary Code
-        const intermediaryCode = dataBlock.match(/Intermediary code\s*:?\s*([A-Z0-9]+)/i)?.[1]?.trim() || "";
-
-        // ✅ Intermediary Contact (first phone number after marker)
-        const phoneMatch = dataBlock.match(/\b\d{10}\b/);
-        const policyHolderPhone = phoneMatch ? phoneMatch[0] : "";
-
-        // ✅ Policy Holder Name
-        let policyHolderName = "";
-        if (policyHolderPhone) {
-            const phoneIndex = dataBlock.indexOf(policyHolderPhone);
-            const afterPhone = dataBlock.substring(phoneIndex);
-            const nameMatch = afterPhone.match(/\(\s*mobile or landline\s*\)\s*:?(\s*:)*\s*[0-9]+\s+[A-Z0-9]+\s+([A-Z\s]+)/i);
-            if (nameMatch) policyHolderName = nameMatch[2].trim();
-        }
-
-        // ✅ Policy Holder Address
-        let policyHolderAddress = "";
-        if (policyHolderName) {
-            const nameIndex = dataBlock.indexOf(policyHolderName);
-            const afterName = dataBlock.substring(nameIndex + policyHolderName.length).trim();
-            const addressMatch = afterName.match(/([\w\s,.-]+?)\s+\b\d{10}\b/);
-            if (addressMatch) policyHolderAddress = addressMatch[1].trim();
-        }
-
-        // ✅ Policy Number → Product Name → Policy Period → Tenure
-        let policyNumber = "";
-        let productName = "";
-        let policyPeriod = "";
-        let tenure = "";
-
-        if (policyHolderAddress) {
-            const addressIndex = dataBlock.indexOf(policyHolderAddress);
-            const afterAddress = dataBlock.substring(addressIndex + policyHolderAddress.length).trim();
-            const nextPhoneMatch = afterAddress.match(/\b\d{10}\b/);
-            if (nextPhoneMatch) {
-                const phoneAfterAddressIndex = afterAddress.indexOf(nextPhoneMatch[0]);
-                const afterPhone2 = afterAddress.substring(phoneAfterAddressIndex + nextPhoneMatch[0].length).trim();
-
-                // ✅ Extract Policy Number
-                const policyMatch = afterPhone2.match(/([0-9]{6,}\s*\d{0,2})/);
-                if (policyMatch) {
-                    policyNumber = policyMatch[1].trim();
-
-                    // ✅ Extract Product Name (skip Floater Basis)
-                    const policyIndex = afterPhone2.indexOf(policyNumber);
-                    const afterPolicy = afterPhone2.substring(policyIndex + policyNumber.length).trim();
-                    const productMatch = afterPolicy.match(/([A-Z][A-Za-z\s]+(?:AIG)?\s+[A-Za-z]+\s+[A-Za-z]+)(?=\s+Floater Basis)/i);
-                    if (productMatch) productName = productMatch[1].trim();
-
-                    // ✅ Extract Policy Period
-                    const periodMatch = afterPolicy.match(/From\s+\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}\s+hrs\s+to\s+\d{2}\/\d{2}\/\d{4}\s+on\s+\d{2}:\d{2}\s+PM/i);
-                    if (periodMatch) policyPeriod = periodMatch[0].trim();
-
-                    // ✅ Extract Tenure (skip Renewal Business)
-                    const tenureMatch = afterPolicy.match(/(\d+\s+Year)(?!.*Renewal\s+Business)/i);
-                    if (tenureMatch) tenure = tenureMatch[1].trim();
+            for (let j = i + 1; j < lines.length; j++) {
+                if (/^\d{10,12}(\s?\d{0,2})?$/.test(lines[j])) {
+                    policyNumber = lines[j].trim();
+                    if (lines[j + 1]) productName = lines[j + 1].trim();
+                    for (let k = j + 2; k < lines.length; k++) {
+                        if (lines[k].startsWith("From")) {
+                            policyPeriod = (lines[k] + " " + lines[k + 1]).replace(/\n/g, " ").trim();
+                            break;
+                        }
+                    }
+                    break;
                 }
             }
         }
 
-        // ✅ Insured Persons Extraction
-        const insuredPersons = [];
-        const insuredRegex = /Insured Persons Details\s*:([\s\S]*?)(?=\*For Family Floater|Nominee Details)/i;
-        const insuredMatch = rawExtractedText.match(insuredRegex);
-        if (insuredMatch) {
-            const insuredBlock = insuredMatch[1].trim();
-            const personRegex = /([A-Z0-9]+)\s+\d+\s+([A-Z\s]+)\s+(\d{2}\/\d{2}\/\d{4})\s+\d{2}\/\d{2}\/\d{4}\s+(\d+)\s+(\w+)\s+([\d,]+\.?\d*)/gi;
-            let match;
-            while ((match = personRegex.exec(insuredBlock)) !== null) {
-                insuredPersons.push({
-                    memberId: match[1].trim(),
-                    insuredName: match[2].trim(),
-                    dob: match[3].trim(),
-                    age: match[4].trim(),
-                    relationship: match[5].trim(),
-                    sumInsured: match[6].trim()
+        const tenureMatch = rawExtractedText.match(/(\d+\s+Year)(?!.*Renewal\s+Business)/i);
+        const policyTenure = tenureMatch ? tenureMatch[1].trim() : "";
+
+        // ---- Extract Insured Members ----
+        const cleanedText = rawExtractedText.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+        const insuredMembers = [];
+        const insuredSectionMatch = cleanedText.match(/Insured Persons Details\s*:(.*?)(?=Nominee Details|Benefits table|$)/i);
+
+        if (insuredSectionMatch) {
+            const insuredSection = insuredSectionMatch[1].trim();
+            const personRegex = /(0YAMI\d+)\s+\d{4}\s+.*?(?=(?:0YAMI\d+|$))/g;
+            const personMatches = insuredSection.match(personRegex);
+
+            if (personMatches) {
+                personMatches.forEach(entry => {
+                    const memberIdMatch = entry.match(/(0YAMI\d+)\s+(\d{4})/);
+                    const memberId = memberIdMatch ? memberIdMatch[1] : "";
+                    const code = memberIdMatch ? memberIdMatch[2] : "";
+                    const dates = entry.match(/\d{2}\/\d{2}\/\d{4}/g) || [];
+                    const startDate = dates[0] || "";
+                    const dob = dates[1] || "";
+                    const ageMatch = entry.match(/\d{2}\/\d{2}\/\d{4}(\d{2})[A-Za-z]/);
+                    const age = ageMatch ? ageMatch[1] : "";
+                    const relExtract = entry.match(/\d{2}([A-Za-z]+)/);
+                    const relationship = relExtract ? relExtract[1] : "";
+                    const sumMatch = entry.match(/(\d{1,3}(?:,\d{3})*\.\d{2})/g);
+                    const sumInsured = sumMatch ? sumMatch[sumMatch.length - 1] : "";
+                    const nameSection = entry.substring(entry.indexOf(code) + code.length, entry.indexOf(startDate)).trim();
+                    const insuredName = nameSection.replace(/\d+/g, "").trim();
+
+                    insuredMembers.push({
+                        customerId,
+                        policyNumber,
+                        memberId,
+                        code,
+                        insuredName,
+                        startDate,
+                        dob,
+                        age,
+                        relationship,
+                        sumInsured
+                    });
                 });
             }
         }
 
-        // ✅ Final Response
-        const extractedData = {
+        // ✅ Save Policy Holder into CustomerPolicy
+        const policyHolder = new CustomerPolicy({
             customerId,
-            intermediaryName,
-            intermediaryCode,
-            policyHolderPhone,
+            policyHolderPhone: phoneNumber,
             policyHolderName,
             policyHolderAddress,
             policyNumber,
             productName,
             policyPeriod,
-            tenure, // ✅ Now included
-            insuredPersons
-        };
+            tenure: policyTenure
+        });
+        await policyHolder.save();
 
-        console.log("✅ Extracted Data:", extractedData);
-        return res.json({ message: "PDF processed successfully", extractedData });
+        // ✅ Save Insured Members into CustomerInsuredMembers
+        if (insuredMembers.length > 0) {
+            await CustomerInsuredMembers.insertMany(insuredMembers);
+        }
+
+        return res.json({
+            message: "PDF processed and saved successfully",
+            policyHolder,
+            insuredMembers
+        });
 
     } catch (error) {
-        console.error("❌ PDF Processing Failed:", error);
-        res.status(500).json({ error: "PDF Processing Failed" });
+        console.error("❌ Error in handlePDFUpload:", error.message);
+        console.error(error.stack);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
+getCustomerPolicy = async (req, res) => {
+    try {
+        const { customerId } = req.params;
+
+        // ✅ Validate customer existence
+        const customer = await Customer.findById(customerId);
+        if (!customer) return res.status(404).json({ error: "Customer not found" });
+
+        // ✅ Fetch customer policy
+        const policyData = await CustomerPolicy.findOne({ customerId });
+
+        if (!policyData) {
+            return res.status(404).json({ message: "No policy found for this customer" });
+        }
+
+        return res.json({
+            message: "Customer policy fetched successfully",
+            policyData
+        });
+
+    } catch (error) {
+        console.error("❌ Error in getCustomerPolicy:", error.message);
+        console.error(error.stack);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+getCustomerInsuredMembers = async (req, res) => {
+    try {
+        const { customerId } = req.params;
+
+        // ✅ Validate customer existence
+        const customer = await Customer.findById(customerId);
+        if (!customer) return res.status(404).json({ error: "Customer not found" });
+
+        // ✅ Fetch insured members for this customer
+        const insuredMembers = await CustomerInsuredMembers.find({ customerId });
+
+        if (!insuredMembers || insuredMembers.length === 0) {
+            return res.status(404).json({ message: "No insured members found for this customer" });
+        }
+
+        return res.json({
+            message: "Customer insured members fetched successfully",
+            insuredMembers
+        });
+
+    } catch (error) {
+        console.error("❌ Error in getCustomerInsuredMembers:", error.message);
+        console.error(error.stack);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
 
 }
 

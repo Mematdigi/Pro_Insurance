@@ -1,30 +1,14 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const PolicyCustomerSchema = new mongoose.Schema({
-    customerId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Customer', 
-        required: true 
-    },
-    intermediaryName: String,
-    intermediaryCode: String,
-    intermediaryContactNo: String,
-    issuingOffice: String,
-    clientId: String,
-    proposalNo: String,
+const CustomerPolicySchema = new mongoose.Schema({
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
+    policyHolderPhone: String,
     policyHolderName: String,
     policyHolderAddress: String,
-    insuredGSTNo: String,
-    placeOfSupply: String,
-    supplyCode: String,
-    premiumPaymentZone: String,
-    policyNumber: String,
+    policyNumber: { type: String, required: true },
     productName: String,
-    planType: String,
     policyPeriod: String,
-    businessType: String,
-    policyTenure: String,
-    rawExtractedText: String
+    tenure: String
 }, { timestamps: true });
 
-module.exports = mongoose.model('PolicyCustomer', PolicyCustomerSchema);
+module.exports = mongoose.model("CustomerPolicy", CustomerPolicySchema);
