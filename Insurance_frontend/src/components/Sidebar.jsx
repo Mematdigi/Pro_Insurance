@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext"; // ✅ Import notification context
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTachometerAlt,
@@ -21,6 +22,7 @@ import {
 
 const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
   const { user } = useAuth();
+  const { notificationsCount, fetchNotificationCount } = useNotification(); // ✅ Use notifications from context
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(
     JSON.parse(localStorage.getItem("sidebarOpen")) ?? initialOpen
@@ -28,12 +30,21 @@ const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+          const agent = user || JSON.parse(localStorage.getItem("user"));
+          if (!agent?.id) {
+            console.warn("❌ Agent ID not found.");
+            return;
+          }
   const premiumDueCount = 5;
-  const notificationsCount = 12;
 
   const toggleDropdown = (label) => {
     setOpenDropdown(openDropdown === label ? null : label);
   };
+
+    useEffect(() => {
+    fetchNotificationCount();
+  }, [fetchNotificationCount]);
+
 
   // ✅ Toggle sidebar manually and persist state
   const handleToggleSidebar = () => {

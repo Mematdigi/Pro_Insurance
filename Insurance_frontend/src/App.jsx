@@ -11,6 +11,7 @@ import MyPoliciesPage from "./pages/MyPoliciesPage";
 import AgentDashboard from "./agents/Dashboard"; // Dummy Agent dashboard
 import CompanySelection from "./agents/Company-Selection";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext"; // ✅ Import provider
 import './assets/css/style.css';
 import CompanyPage from "./agents/CompanyPage";
 import CompanyCustomersPage from "./agents/CompanyCustomersPage";
@@ -29,6 +30,10 @@ import NotificationPage from "./agents/NotificationPage";
 import InsuranceCategoryPage from "./agents/InsuranceCategoryPage";
 import PolicyDuePage from "./pages/PolicyDuePage";
 import PolicyViewPage from "./pages/PolicyViewPage";
+import Sidebar from "./components/Sidebar";
+import NotificationPage from "./agent/NotificationPage";
+import Dashboar  from "";
+
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
