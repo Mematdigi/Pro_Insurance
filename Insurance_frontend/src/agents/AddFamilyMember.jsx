@@ -14,6 +14,7 @@ const AddFamilyMember = () => {
   const [memberQuery, setMemberQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showPolicyForm, setShowPolicyForm] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false); // ✅ Control suggestions visibility
 
   const [form, setForm] = useState({
     policyNumber: "",
@@ -24,6 +25,7 @@ const AddFamilyMember = () => {
     age: "",
   });
 
+  // ✅ Initialize policyForm with default values to prevent undefined errors
   const [policyForm, setPolicyForm] = useState({
     policyNumber: "",
     policyHolderName: "",
@@ -92,29 +94,70 @@ const AddFamilyMember = () => {
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (memberQuery.length < 2) {
+      if (memberQuery.length < 1) { 
         setSuggestions([]);
+        setShowSuggestions(false);
         return;
       }
       try {
         const res = await fetch(`http://localhost:5000/api/family/search-member/${memberQuery}`);
         const data = await res.json();
         setSuggestions(data);
+        setShowSuggestions(data.length > 0); // ✅ Show suggestions if data exists
       } catch (err) {
         console.error("Error fetching suggestions", err);
+        setSuggestions([]);
+        setShowSuggestions(false);
       }
     };
-    fetchSuggestions();
+    
+    // ✅ Add debounce to avoid too many API calls
+    const debounceTimer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounceTimer);
   }, [memberQuery]);
+
+  // ✅ Auto-calculate age from DOB
+  const calculateAge = (dob) => {
+    if (!dob) return "";
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age.toString();
+  };
 
   const handleMemberChange = (e) => {
     const { name, value } = e.target;
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
+    
+    // ✅ Auto-calculate age when DOB changes
+    if (name === "dob") {
+      const calculatedAge = calculateAge(value);
+      setForm((prevForm) => ({
+        ...prevForm,
+        [name]: value,
+        age: calculatedAge, // Auto-fill age
+      }));
+      
+      // ✅ Auto-shift to age field after DOB selection
+      setTimeout(() => {
+        const ageField = document.querySelector('input[name="age"]');
+        if (ageField) ageField.focus();
+      }, 100);
+      
+    } else {
+      setForm((prevForm) => ({
+        ...prevForm,
+        [name]: value,
+      }));
+    }
+    
     if (name === "memberName") {
       setMemberQuery(value);
+      setShowSuggestions(value.length > 0); // ✅ Show suggestions when typing
     }
   };
 
@@ -127,96 +170,200 @@ const AddFamilyMember = () => {
   };
 
   const handleSavePolicy = async () => {
-  // ✅ Validate required fields before proceeding
-  if (!form.memberName || !form.relation || !form.age) {
-    alert("Please fill Member Name, Relation, and Age before saving.");
-    return;
-  }
-  if (!policyForm.policyNumber || !policyForm.policyHolderName || !policyForm.contact || !policyForm.company || !policyForm.category || !policyForm.type || !policyForm.premium || !policyForm.startDate || !policyForm.maturityDate) {
-    alert("Please fill all required policy fields.");
-    return;
-  }
-
-  try {
-    // 1️⃣ Save Member in FamilyGroup
-    const memberPayload = {
-      name: form.memberName,
-      relation: form.relation,
-      age: form.age,
-      dob: form.dob || ""
-    };
-
-    console.log("🚀 Sending Member Payload:", memberPayload);
-
-    const memberRes = await fetch(`http://localhost:5000/api/family/add/${groupId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(memberPayload),
-    });
-
-    const memberData = await memberRes.json();
-    if (!memberRes.ok) {
-      console.error("Error saving member:", memberData);
-      alert(memberData.msg || "Failed to save member.");
+    // ✅ Validate required fields before proceeding
+    if (!form.memberName || !form.relation || !form.age) {
+      alert("Please fill Member Name, Relation, and Age before saving.");
       return;
     }
-    console.log("✅ Member saved:", memberData);
-
-    // 2️⃣ Check if Policy already exists
-    const checkRes = await fetch(`http://localhost:5000/api/check/${policyForm.policyNumber}`);
-    const checkData = await checkRes.json();
-    if (checkRes.ok && checkData.exists) {
-      alert("⚠️ Policy already exists in the database!");
+    if (!policyForm.policyNumber || !policyForm.policyHolderName || !policyForm.contact || !policyForm.company || !policyForm.category || !policyForm.type || !policyForm.premium || !policyForm.startDate || !policyForm.maturityDate) {
+      alert("Please fill all required policy fields.");
       return;
     }
 
-    // 3️⃣ Prepare Policy Payload matching schema
-    const policyPayload = {
-      policyNumber: policyForm.policyNumber,
-      customerName: policyForm.policyHolderName,      // maps to customerName
-      customerPhone: policyForm.contact,             // maps to customerPhone
-      customerEmail: policyForm.email || "",         // optional but included
-      company: policyForm.company,
-      insuranceType: policyForm.category,            // maps insurance type
-      policyType: policyForm.type,
-      agentId: user?.id,                              // agent ID from auth context
-      policyDetails: {
-        premium: Number(policyForm.premium),
-        paymentMode: policyForm.paymentMode,
-        startDate: policyForm.startDate,
-        endDate: policyForm.maturityDate,           // maturityDate -> endDate
-        branch: policyForm.branch,
+    try {
+      // 1️⃣ Save Member in FamilyGroup
+      const memberPayload = {
+        name: form.memberName,
+        relation: form.relation,
+        age: form.age,
+        dob: form.dob || ""
+      };
+
+      console.log("🚀 Sending Member Payload:", memberPayload);
+
+      const memberRes = await fetch(`http://localhost:5000/api/family/add/${groupId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(memberPayload),
+      });
+
+      const memberData = await memberRes.json();
+      if (!memberRes.ok) {
+        console.error("Error saving member:", memberData);
+        alert(memberData.msg || "Failed to save member.");
+        return;
       }
-    };
+      console.log("✅ Member saved:", memberData);
 
-    console.log("🚀 Sending Policy Payload:", policyPayload);
+      // ✅ Update family list immediately after saving member
+      const updatedMemberRes = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
+      const updatedMemberData = await updatedMemberRes.json();
+      if (updatedMemberRes.ok) {
+        setFamilyList(updatedMemberData.familyMembers || []);
+      }
 
-    // 4️⃣ Save Policy in Policy DB
-    const policyRes = await fetch("http://localhost:5000/api/policies", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(policyPayload),
-    });
+      // 2️⃣ Check if Policy already exists
+      const checkRes = await fetch(`http://localhost:5000/api/check/${policyForm.policyNumber}`);
+      const checkData = await checkRes.json();
+      if (checkRes.ok && checkData.exists) {
+        alert("⚠️ Policy already exists in the database!");
+        return;
+      }
 
-    const policyData = await policyRes.json();
-    if (!policyRes.ok) {
-      console.error("Error saving policy:", policyData);
-      alert(policyData.msg || "Failed to save policy.");
-      return;
+      // 3️⃣ Prepare Policy Payload matching schema
+      const policyPayload = {
+        policyNumber: policyForm.policyNumber,
+        customerName: policyForm.policyHolderName,      // maps to customerName
+        customerPhone: policyForm.contact,             // maps to customerPhone
+        customerEmail: policyForm.email || "",         // optional but included
+        company: policyForm.company,
+        insuranceType: policyForm.category,            // maps insurance type
+        policyType: policyForm.type,
+        agentId: user?.id,                              // agent ID from auth context
+        policyDetails: {
+          premium: Number(policyForm.premium),
+          paymentMode: policyForm.paymentMode,
+          startDate: policyForm.startDate,
+          endDate: policyForm.maturityDate,           // maturityDate -> endDate
+          branch: policyForm.branch,
+        }
+      };
+
+      console.log("🚀 Sending Policy Payload:", policyPayload);
+
+      // 4️⃣ Save Policy in Policy DB
+      const policyRes = await fetch("http://localhost:5000/api/policies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(policyPayload),
+      });
+
+      const policyData = await policyRes.json();
+      if (!policyRes.ok) {
+        console.error("Error saving policy:", policyData);
+        alert(policyData.msg || "Failed to save policy.");
+        return;
+      }
+
+      console.log("✅ Policy saved:", policyData);
+      alert("Member and Policy saved successfully!");
+
+      // ✅ Reset forms after successful save
+      handleResetForms();
+
+    } catch (error) {
+      console.error("❌ Error saving policy:", error);
+      alert("Unexpected error occurred while saving policy.");
     }
+  };
 
-    console.log("✅ Policy saved:", policyData);
-    alert("Member and Policy saved successfully!");
-
-  } catch (error) {
-    console.error("❌ Error saving policy:", error);
-    alert("Unexpected error occurred while saving policy.");
-  }
-};
   const handleDelete = (index) => {
     const updated = [...familyList];
     updated.splice(index, 1);
     setFamilyList(updated);
+  };
+
+  // ✅ Reset function to clear all forms
+  const handleResetForms = () => {
+    setForm((prev) => ({
+      ...prev,
+      memberName: "",
+      relation: "",
+      dob: "",
+      age: "",
+    }));
+    setPolicyForm({
+      policyNumber: "",
+      policyHolderName: "",
+      contact: "",
+      email: "",
+      company: "",
+      category: "",
+      type: "",
+      premium: "",
+      paymentMode: "",
+      startDate: "",
+      maturityDate: "",
+      branch: "",
+    });
+    setShowPolicyForm(false);
+    setMemberQuery("");
+    setSuggestions([]);
+    setShowSuggestions(false); // ✅ Hide suggestions
+  };
+
+  // Form styles
+  const inputStyle = {
+    width: '100%',
+    padding: '10px',
+    border: '1px solid #ccc',
+    borderRadius: '6px',
+    fontSize: '14px',
+    outline: 'none'
+  };
+
+  const suggestionListStyle = {
+    listStyle: 'none',
+    margin: 0,
+    padding: '5px',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    background: 'white',
+    position: 'absolute',
+    zIndex: 1000,
+    width: '100%',
+    maxHeight: '150px',
+    overflowY: 'auto'
+  };
+
+  const suggestionItemStyle = {
+    padding: '8px',
+    cursor: 'pointer',
+    borderBottom: '1px solid #ddd'
+  };
+
+  const addPolicyButtonStyle = {
+    marginTop: '15px',
+    backgroundColor: '#1e40af',
+    color: 'white',
+    border: 'none',
+    padding: '10px 15px',
+    borderRadius: '6px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  };
+
+  const saveButtonStyle = {
+    marginTop: '15px',
+    backgroundColor: '#16a34a',
+    color: 'white',
+    border: 'none',
+    padding: '10px 15px',
+    borderRadius: '6px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  };
+
+  // ✅ Added missing resetButtonStyle
+  const resetButtonStyle = {
+    marginTop: '15px',
+    backgroundColor: '#dc2626',
+    color: 'white',
+    border: 'none',
+    padding: '10px 15px',
+    borderRadius: '6px',
+    fontWeight: '600',
+    cursor: 'pointer'
   };
 
   return (
@@ -277,133 +424,439 @@ const AddFamilyMember = () => {
                 <label style={{ fontWeight: 'bold', color: '#495057', fontSize: '14px' }}>Group ID:</label>
                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#007bff', marginTop: '5px' }}>{groupId}</div>
               </div>
-
-              {/* Tabs */}
-              <div style={{ display: 'flex', marginBottom: '20px', borderBottom: '2px solid #f0f0f0' }}>
-                <button style={{ padding: '12px 24px', border: 'none', backgroundColor: activeTab === "member" ? '#f3f4f6' : 'transparent', color: activeTab === "member" ? '#6b7280' : '#666', cursor: 'pointer', borderRadius: '5px 5px 0 0', fontWeight: 'bold' }}
-                  onClick={() => setActiveTab("member")}>Member Details</button>
-              </div>
-
+           
               {/* ✅ Member Form */}
               {activeTab === "member" && (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginBottom: '20px' }}>
-                    <input type="text" name="policyNumber" placeholder="Enter policy number" value={form.policyNumber} onChange={handleMemberChange} />
-                    <input type="text" name="primaryHolder" placeholder="Enter primary holder name" value={form.primaryHolder} onChange={handleMemberChange} />
+                  {/* Member Form Grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                      gap: "15px",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    {/* Policy Number */}
                     <div>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#333' }}>
-                          Member Name *
-                        </label>
-                        <div style={{ position: 'relative' }}>
+                      <label>Policy Number</label>
+                      <input
+                        type="text"
+                        name="policyNumber"
+                        placeholder="Enter Policy Number"
+                        value={form.policyNumber || ""}
+                        onChange={handleMemberChange}
+                        style={inputStyle}
+                        readOnly
+                      />
+                    </div>
+
+                    {/* Primary Holder */}
+                    <div>
+                      <label>Primary Holder Name</label>
+                      <input
+                        type="text"
+                        name="primaryHolder"
+                        placeholder="Enter Primary Holder Name"
+                        value={form.primaryHolder || ""}
+                        onChange={handleMemberChange}
+                        style={inputStyle}
+                        readOnly
+                      />
+                    </div>
+
+                    {/* Member Name with Dropdown and Suggestions */}
+                    <div style={{ position: "relative" }}>
+                      <label>Member Name *</label>
+                      <div style={{ position: "relative" }}>
+                        <input
+                          type="text"
+                          name="memberName"
+                          placeholder="Enter Member Name"
+                          value={form.memberName || ""}
+                          onChange={(e) => {
+                            handleMemberChange(e);
+                            setMemberQuery(e.target.value);
+                          }}
+                          onFocus={() => {
+                            if (memberQuery.length > 0) {
+                              setShowSuggestions(true);
+                            }
+                          }}
+                          onBlur={() => {
+                            // ✅ Delay hiding suggestions to allow clicks
+                            setTimeout(() => setShowSuggestions(false), 200);
+                          }}
+                          style={{
+                            ...inputStyle,
+                            paddingRight: "35px", // Space for dropdown arrow
+                          }}
+                        />
+                        {/* ✅ Fixed Dropdown Arrow Button */}
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            // ✅ Fetch all members when dropdown is clicked
+                            try {
+                              const res = await fetch('http://localhost:5000/api/family/search-member/all');
+                              const data = await res.json();
+                              setSuggestions(data);
+                              setShowSuggestions(true);
+                              setMemberQuery(""); // Clear query to show all
+                              
+                              // Focus on input
+                              const memberInput = document.querySelector('input[name="memberName"]');
+                              if (memberInput) memberInput.focus();
+                            } catch (err) {
+                              console.error("Error fetching all members:", err);
+                              // Fallback: trigger with "a" query
+                              setMemberQuery("a");
+                              setShowSuggestions(true);
+                            }
+                          }}
+                          style={{
+                            position: "absolute",
+                            right: "8px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                            color: "#666",
+                            padding: "4px",
+                            width: "24px",
+                            height: "24px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "3px",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#f0f0f0";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "transparent";
+                          }}
+                        >
+                          ▼
+                        </button>
+                      </div>
+                      
+                      {/* ✅ Enhanced Suggestions Dropdown with proper visibility control */}
+                      {showSuggestions && suggestions?.length > 0 && (
+                        <ul
+                          style={{
+                            listStyle: "none",
+                            margin: 0,
+                            padding: "5px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            background: "white",
+                            position: "absolute",
+                            zIndex: 2000,
+                            width: "100%",
+                            maxHeight: "150px",
+                            overflowY: "auto",
+                            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                            top: "100%",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {suggestions.map((sug) => (
+                            <li
+                              key={sug._id}
+                              style={{
+                                padding: "8px",
+                                cursor: "pointer",
+                                borderBottom: "1px solid #eee",
+                                transition: "background-color 0.2s",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#f8f9fa";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "white";
+                              }}
+                              onMouseDown={(e) => {
+                                e.preventDefault(); // ✅ Prevent input blur before click
+                              }}
+                              onClick={async () => {
+                                setForm((prev) => ({ ...prev, memberName: sug.name }));
+                                setSuggestions([]);
+                                setShowSuggestions(false);
+                                setMemberQuery("");
+                                
+                                // ✅ Auto-shift to relation field
+                                setTimeout(() => {
+                                  const relationField = document.querySelector('select[name="relation"]');
+                                  if (relationField) relationField.focus();
+                                }, 100);
+                                
+                                try {
+                                  const res = await fetch(`http://localhost:5000/api/by-id/${sug._id}`);
+                                  const data = await res.json();
+                                  if (res.ok && data) {
+                                    setPolicyForm((prev) => ({
+                                      ...prev,
+                                      policyNumber: data.policyNumber || "",
+                                      policyHolderName: data.customerName || sug.name,
+                                      contact: data.customerPhone || "",
+                                      email: data.customerEmail || "",
+                                      company: data.company || "",
+                                      category: data.insuranceType || "",
+                                      type: data.policyType || "",
+                                      premium: data.policyDetails?.premium || "",
+                                      paymentMode: "",
+                                      startDate: data.policyDetails?.startDate || "",
+                                      maturityDate: data.policyDetails?.endDate || "",
+                                    }));
+                                  }
+                                } catch (err) {
+                                  console.error("Error fetching policy data:", err);
+                                }
+                              }}
+                            >
+                              <div style={{ fontWeight: "500" }}>{sug.name}</div>
+                              <div style={{ fontSize: "12px", color: "#666" }}>
+                                {sug.contact || "No Contact"}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {/* Relation */}
+                    <div>
+                      <label>Relation</label>
+                      <select
+                        name="relation"
+                        value={form.relation || ""}
+                        onChange={(e) => {
+                          handleMemberChange(e);
+                          // ✅ Auto-shift to DOB field after relation selection
+                          setTimeout(() => {
+                            const dobField = document.querySelector('input[name="dob"]');
+                            if (dobField) dobField.focus();
+                          }, 100);
+                        }}
+                        style={inputStyle}
+                      >
+                        <option value="">Select Relation</option>
+                        <option>Wife</option>
+                        <option>Son</option>
+                        <option>Daughter</option>
+                        <option>Mother</option>
+                        <option>Father</option>
+                      </select>
+                    </div>
+
+                    {/* DOB with Auto Age calculation */}
+                    <div>
+                      <label>Date of Birth</label>
+                      <input
+                        type="date"
+                        name="dob"
+                        value={form.dob || ""}
+                        onChange={handleMemberChange} // This will auto-calculate age
+                        style={inputStyle}
+                      />
+                    </div>
+
+                    {/* Age - Auto calculated */}
+                    <div>
+                      <label>Age (Auto-calculated)</label>
+                      <input
+                        type="text"
+                        name="age"
+                        placeholder="Age will be calculated from DOB"
+                        value={form.age || ""}
+                        onChange={handleMemberChange}
+                        style={{
+                          ...inputStyle,
+                          backgroundColor: form.dob ? "#f8f9fa" : "white", // Gray out if auto-calculated
+                        }}
+                        readOnly={!!form.dob} // Make read-only if DOB is selected
+                      />
+                    </div>
+                  </div>
+
+                  {/* ✅ Add Policy Button - Fixed conditional rendering */}
+                  {isMemberFormValid && !showPolicyForm && (
+                    <button
+                      type="button"
+                      style={addPolicyButtonStyle}
+                      onClick={() => setShowPolicyForm(true)}
+                    >
+                      + Add Policy
+                    </button>
+                  )}
+
+                  {/* ✅ Policy Form - Fixed conditional rendering with proper null checks */}
+                  {showPolicyForm && policyForm && (
+                    <div className="policy-form" style={{ marginTop: "20px" }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                          gap: "15px",
+                        }}
+                      >
+                        {/* Contact Number */}
+                        <div>
+                          <label>Contact Number</label>
                           <input
                             type="text"
-                            name="memberName"
-                            placeholder="Enter member name"
-                            value={form.memberName}
-                            onChange={(e) => {
-                              handleMemberChange(e);
-                              setMemberQuery(e.target.value);
-                            }}
-                            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px' }}
+                            name="contact"
+                            placeholder="Auto-fetched Contact"
+                            value={policyForm.contact || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
                           />
-                          {suggestions.length > 0 && (
-                            <ul style={{
-                              listStyle: "none", margin: 0, padding: "5px", border: "1px solid #ccc",
-                              borderRadius: "4px", background: "white", position: "absolute", zIndex: 1000, width: "100%"
-                            }}>
-                              {suggestions.map((sug) => (
-                                <li
-                                  key={sug._id}
-                                  style={{ padding: "8px", cursor: "pointer", borderBottom: "1px solid #ddd" }}
-                                  onClick={async () => {
-                                    setForm({ ...form, memberName: sug.name });
-                                    setSuggestions([]);
+                        </div>
 
+                        {/* Email */}
+                        <div>
+                          <label>Email</label>
+                          <input
+                            type="email"
+                            name="email"
+                            placeholder="Auto-fetched Email"
+                            value={policyForm.email || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          />
+                        </div>
 
-                                    try{
-                                      const res = await fetch(`http://localhost:5000/api/by-id/${sug._id}`);
-                                      const data = await res.json();
-                                      if (res.ok && data) {
-                                        setPolicyForm({
-                                          policyNumber: data.policyNumber || "",
-                                          policyHolderName: data.customerName|| sug.name,
-                                          contact: data.customerPhone || "",
-                                          email: data.customerEmail || "",
-                                          company: data.company || "",
-                                          category: data.insuranceType || "",
-                                          type: data.policyType || "",
-                                          premium: data.policyDetails?.premium || "",
-                                          paymentMode: "",
-                                          startDate: data.policyDetails?.startDate || "",
-                                          maturityDate: data.policyDetails.endDate || "",
-                                          branch: ""
-                                        });
-                                      } else {
-                                        setPolicyForm((prev) => ({
-                                          ...prev,
-                                          policyHolderName: sug.name,
-                                          contact: sug.contact ||"",
-                                      }))
-                                    }
-                                  } catch (err) {
-                                    console.error("Error fetching policy data:", err);
-                                  }
-                                }}
-                                >
-                                  {sug.name} - ({sug.contact || "No Contact"})
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                        {/* Insurance Company */}
+                        <div>
+                          <label>Insurance Company</label>
+                          <select
+                            name="company"
+                            value={policyForm.company || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          >
+                            <option value="">Select Insurance Company</option>
+                            <option>LIC</option>
+                            <option>HDFC Life</option>
+                          </select>
+                        </div>
+
+                        {/* Insurance Category */}
+                        <div>
+                          <label>Insurance Category</label>
+                          <div style={{ display: "flex", gap: "20px", marginTop: "8px" }}>
+                            <label>
+                              <input
+                                type="radio"
+                                name="category"
+                                value="Life Insurance"
+                                checked={policyForm.category === "Life Insurance"}
+                                onChange={handlePolicyChange}
+                              />
+                              Life
+                            </label>
+                            <label>
+                              <input
+                                type="radio"
+                                name="category"
+                                value="General Insurance"
+                                checked={policyForm.category === "General Insurance"}
+                                onChange={handlePolicyChange}
+                              />
+                              General
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Insurance Type */}
+                        <div>
+                          <label>Insurance Type</label>
+                          <select
+                            name="type"
+                            value={policyForm.type || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          >
+                            <option value="">Select Insurance Type</option>
+                            <option>Term</option>
+                            <option>ULIP</option>
+                          </select>
+                        </div>
+
+                        {/* Premium */}
+                        <div>
+                          <label>Premium Amount</label>
+                          <input
+                            type="number"
+                            name="premium"
+                            placeholder="Enter Premium Amount"
+                            value={policyForm.premium || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          />
+                        </div>
+
+                        {/* Payment Mode */}
+                        <div>
+                          <label>Payment Mode</label>
+                          <select
+                            name="paymentMode"
+                            value={policyForm.paymentMode || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          >
+                            <option value="">Select Payment Mode</option>
+                            <option>Monthly</option>
+                            <option>Quarterly</option>
+                            <option>Yearly</option>
+                          </select>
+                        </div>
+
+                        {/* Start Date */}
+                        <div>
+                          <label>Policy Start Date</label>
+                          <input
+                            type="date"
+                            name="startDate"
+                            value={policyForm.startDate || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          />
+                        </div>
+
+                        {/* Maturity Date */}
+                        <div>
+                          <label>Maturity Date</label>
+                          <input
+                            type="date"
+                            name="maturityDate"
+                            value={policyForm.maturityDate || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          />
                         </div>
                       </div>
-                    <select name="relation" value={form.relation} onChange={handleMemberChange}>
-                      <option value="">Select relation</option><option>Wife</option><option>Son</option><option>Daughter</option><option>Mother</option><option>Father</option>
-                    </select>
-                    <input type="date" name="dob" value={form.dob} onChange={handleMemberChange} />
-                    <input type="text" name="age" placeholder="Enter age" value={form.age} onChange={handleMemberChange} />
-                  </div>
 
-                  {/* Actions */}
-                  <div className="actions" style={{ marginTop: '15px' }}>
-                    <button className="btn-primary blue__btn" onClick={handleAddMember}><i className="bi bi-save me-1"></i> Add Member</button>
-                    <button className="btn-reset Reset__btn" onClick={() => setForm({ policyNumber: "", primaryHolder: "", memberName: "", relation: "", dob: "", age: "" })}>
-                      <i className="bi bi-arrow-clockwise me-1"></i> Reset Form
-                    </button>
-                    {isMemberFormValid && !showPolicyForm && (
-                      <button className="btn-primary blue__btn" style={{ marginTop: '10px' }} onClick={() => setShowPolicyForm(true)}>
-                        + Add Policy
-                      </button>
-                    )}
-                  </div>
-
-                  {/* ✅ Policy Form */}
-                  {showPolicyForm && (
-                    <div className="policy-form" style={{ marginTop: '20px' }}>
-                      <h4>Add Policy Details</h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' }}>
-                        <input type="text" name="policyNumber" placeholder="Enter policy number" value={policyForm.policyNumber} onChange={handlePolicyChange} />
-                        <input type="text" name="policyHolderName" placeholder="Enter policy holder name" value={policyForm.policyHolderName} onChange={handlePolicyChange} />
-                        <input type="text" name="contact" placeholder="Enter contact number" value={policyForm.contact} onChange={handlePolicyChange} />
-                        <input type="email" name="email" placeholder="Enter email address" value={policyForm.email} onChange={handlePolicyChange} />
-                        <select name="company" value={policyForm.company} onChange={handlePolicyChange}>
-                          <option value="">Select insurance company</option><option>LIC</option><option>HDFC Life</option>
-                        </select>
-                        <select name="category" value={policyForm.category} onChange={handlePolicyChange}>
-                          <option value="">Select insurance category</option><option>Life Insurance</option><option>General Insurance</option>
-                        </select>
-                        <select name="type" value={policyForm.type} onChange={handlePolicyChange}>
-                          <option value="">Select insurance type</option><option>Term</option><option>ULIP</option>
-                        </select>
-                        <input type="text" name="premium" placeholder="Enter premium amount" value={policyForm.premium} onChange={handlePolicyChange} />
-                        <select name="paymentMode" value={policyForm.paymentMode} onChange={handlePolicyChange}>
-                          <option value="">Select payment mode</option><option>Monthly</option><option>Yearly</option>
-                        </select>
-                        <input type="date" name="startDate" value={policyForm.startDate} onChange={handlePolicyChange} />
-                        <input type="date" name="maturityDate" value={policyForm.maturityDate} onChange={handlePolicyChange} />
-                        <input type="text" name="branch" placeholder="Enter branch name" value={policyForm.branch} onChange={handlePolicyChange} />
+                      {/* Save & Reset Buttons */}
+                      <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
+                        <button
+                          type="button"
+                          style={saveButtonStyle}
+                          onClick={handleSavePolicy}
+                        >
+                          Save Member & Policy
+                        </button>
+                        <button
+                          type="button"
+                          style={resetButtonStyle}
+                          onClick={handleResetForms}
+                        >
+                          Reset
+                        </button>
                       </div>
-                      <button className="btn-success blue__btn" style={{ marginTop: '10px' }} onClick={handleSavePolicy}>Save Member & Policy</button>
                     </div>
                   )}
                 </>
@@ -419,19 +872,40 @@ const AddFamilyMember = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f8f9fa' }}>
-                      <th>Name</th><th>Relation</th><th>Age</th><th>Status</th><th>Action</th>
+                      <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Name</th>
+                      <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Relation</th>
+                      <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Age</th>
+                      <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Status</th>
+                      <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {familyList.map((member, i) => (
-                      <tr key={i}>
-                        <td>{member.name}</td>
-                        <td>{member.relation}</td>
-                        <td>{member.age}</td>
-                        <td><span style={{ backgroundColor: '#28a745', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '12px' }}>{member.status}</span></td>
-                        <td><button className="btn-delete trash__btn" onClick={() => handleDelete(i)}><i className="bi bi-trash"></i></button></td>
+                    {familyList.length > 0 ? familyList.map((member, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid #dee2e6' }}>
+                        <td style={{ padding: '10px' }}>{member.name}</td>
+                        <td style={{ padding: '10px' }}>{member.relation}</td>
+                        <td style={{ padding: '10px' }}>{member.age}</td>
+                        <td style={{ padding: '10px' }}>
+                          <span style={{ backgroundColor: '#28a745', color: 'white', padding: '4px 8px', borderRadius: '12px', fontSize: '12px' }}>
+                            {member.status || 'Active'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '10px' }}>
+                          <button 
+                            onClick={() => handleDelete(i)}
+                            style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            Delete
+                          </button>
+                        </td>
                       </tr>
-                    ))}
+                    )) : (
+                      <tr>
+                        <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                          No family members added yet
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
