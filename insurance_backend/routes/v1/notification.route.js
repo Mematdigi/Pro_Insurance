@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Policy = require('../../models/Policy');
+const Policy = require('../../models/AgentPolicies');
 const dayjs = require('dayjs');
 const { notificationController, } = require("../../controllers/index");
 const startNotificationCron = require("../../jobs/notificationScheduler")

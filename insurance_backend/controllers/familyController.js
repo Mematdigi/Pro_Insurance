@@ -1,5 +1,5 @@
 const FamilyGroup = require("../models/FamilyGroup");
-const Policy = require('../models/Policy');
+const Policy = require('../models/AgentPolicies');
 const mongoose = require("mongoose");
 
 exports.checkOrCreateGroup = async (req, res) => {

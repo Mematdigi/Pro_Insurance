@@ -18,4 +18,20 @@ const sendSms = (phone, message) => {
   }
 };
 
-module.exports = { sendSms };
+const sendWhatsAppMessage = (phone, message) => {
+  try {
+    const client = require("twilio")(accountSid, authToken);
+    client.messages
+      .create({
+        body: message,
+        from: `whatsapp:${twilioPhoneNumber}`,
+        to: `whatsapp:${phone}`,
+      })
+      .then((res) => console.log("WhatsApp message sent successfully"));
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+
+module.exports = { sendSms , sendWhatsAppMessage };
