@@ -8,7 +8,7 @@ const MyPoliciesPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const navigate = useNavigate();
-
+  
 
   const policies = [
     {
