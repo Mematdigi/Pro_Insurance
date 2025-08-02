@@ -106,7 +106,6 @@ const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar}) => {
     { label: "Add Policies", path: "/customer/addinsurance", icon: faDownload },
     { label: "Policies", path: "/customer/mypolicies", icon: faShieldAlt },
     { label: "Due Payments", path: "/customer/due-payments", icon: faFileInvoiceDollar },
-    { label: "Notifications", path: "/customer/notification", icon: faPlus, badge: notificationsCount },
     { label: "Logout", path: "/login", icon: faSignOutAlt },
   ];
 
