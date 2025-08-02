@@ -6,32 +6,77 @@ const PolicyAlterations = () => {
   const [searchData, setSearchData] = useState({ customerName: "", policyNumber: "" });
   const [policyData, setPolicyData] = useState(null);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [originalData, setOriginalData] = useState(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  const handleSearch = () => {
-    setPolicyData({
-      customerName: "Rajesh Kumar",
-      policyNumber: "LIC12345678",
-      contact: "+91 9876543210",
-      email: "rajesh@example.com",
-      company: "LIC India",
-      category: "Life Insurance",
-      type: "Term",
-      branch: "Patna Main",
-      premium: "15000",
-      paymentMode: "Quarterly",
-      startDate: "2023-04-01",
-      maturityDate: "2043-04-01",
-      nomineeName: "Anita Kumari",
-      nomineeRelation: "Wife",
-    });
-    setShowInstructions(false);
+  const handleSearch = async () => {
+    if (!searchData.policyNumber){
+      alert("Please enter policy number");
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:5000/api/policies/search?policyNumber=${searchData.policyNumber}`);
+      const data = await res.json();
+      if (res.ok) {
+        setPolicyData(data);
+        setOriginalData(data); // Keep a copy for diff check
+        setShowInstructions(false);
+      } else {
+        alert(data.msg || "Policy not found");
+      }
+    } catch (error) {
+      console.error("Error fetching policy:", error);
+      alert("Failed to fetch policy");
+    }
   };
-
+    
   const handleChange = (e) => {
-    setPolicyData({ ...policyData, [e.target.name]: e.target.value });
+    const {name , value} = e.target;
+
+    if (["premium", "startDate", "maturityDate", "paymentMode"].includes(name)) {
+    setPolicyData((prev) => ({
+      ...prev,
+      policyDetails: { ...prev.policyDetails, [name]: value },
+    }));
+  } else {
+    // For top-level fields
+    setPolicyData((prev) => ({ ...prev, [name]: value }));
+  }
+};
+  
+
+  const hanldeUpdate = async () =>{
+    const updatedFields={};
+    for(const key in policyData){
+      if(policyData[key] !== originalData[key]){
+        updatedFields[key] = policyData[key];
+      }
+    }
+    if(Object.keys(updatedFields).length ===0){
+      alert("No changes detected");
+      return;
+    }
+    try{
+      const res = await fetch(`http://localhost:5000/api/policies/update/${policyData._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFields),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ Policy updated successfully!");
+        setPolicyData(data.updatedPolicy);
+        setOriginalData(data.updatedPolicy);
+      } else {
+        alert("❌ Update failed: " + data.msg);
+      }
+    } catch (error) {
+      console.error("Error updating policy:", error);
+      alert("Server error while updating");
+    }
   };
+    
 
   return (
     <div className="dashboard-layout d-flex">
@@ -101,16 +146,16 @@ const PolicyAlterations = () => {
               <div className="col-md-6">
                 <h6 className="section-heading"><i className="bi bi-person-lines-fill me-2"></i>Customer Information</h6>
                 <label className="form-label">Customer Name</label>
-                <input className="form-control" value={policyData.customerName} name="customerName" onChange={handleChange} />
+                <input className="form-control" value={policyData.customerName} name="customerName" onChange={handleChange} disabled />
 
                 <label className="form-label mt-2">Policy Number</label>
-                <input className="form-control" value={policyData.policyNumber} name="policyNumber" onChange={handleChange} />
+                <input className="form-control" value={policyData.policyNumber} name="policyNumber" onChange={handleChange}  disabled />
 
                 <label className="form-label mt-2">Contact Number</label>
-                <input className="form-control" value={policyData.contact} name="contact" onChange={handleChange} />
+                <input className="form-control" value={policyData.customerPhone} name="customerPhone" onChange={handleChange} />
 
                 <label className="form-label mt-2">Email</label>
-                <input className="form-control" value={policyData.email} name="email" onChange={handleChange} />
+                <input className="form-control" value={policyData.customerEmail} name="customerEmail" onChange={handleChange} />
               </div>
 
               {/* Policy Info */}
@@ -120,27 +165,25 @@ const PolicyAlterations = () => {
                 <input className="form-control" value={policyData.company} name="company" onChange={handleChange} />
 
                 <label className="form-label mt-2">Insurance Category</label>
-                <select className="form-select" name="category" value={policyData.category} onChange={handleChange}>
+                <select className="form-select" name="category" value={policyData.insuranceType} onChange={handleChange}>
                   <option>Life Insurance</option>
                   <option>General Insurance</option>
                 </select>
 
                 <label className="form-label mt-2">Insurance Type</label>
-                <select className="form-select" name="type" value={policyData.type} onChange={handleChange}>
+                <select className="form-select" name="type" value={policyData.policyType} onChange={handleChange}>
                   <option>Term</option>
                   <option>ULIP</option>
                   <option>Money Back</option>
                 </select>
 
-                <label className="form-label mt-2">Branch Name</label>
-                <input className="form-control" value={policyData.branch} name="branch" onChange={handleChange} />
               </div>
 
               {/* Premium Info */}
               <div className="col-md-6">
                 <h6 className="section-heading"><i className="bi bi-cash-coin me-2"></i>Premium Information</h6>
                 <label className="form-label mt-2">Premium Amount (₹)</label>
-                <input className="form-control" value={policyData.premium} name="premium" onChange={handleChange} />
+                <input className="form-control" value={policyData.policyDetails?.premium} name="premium" onChange={handleChange} />
 
                 <label className="form-label mt-2">Payment Mode</label>
                 <select className="form-select" name="paymentMode" value={policyData.paymentMode} onChange={handleChange}>
@@ -150,29 +193,23 @@ const PolicyAlterations = () => {
                 </select>
 
                 <label className="form-label mt-2">Premium Start Date</label>
-                <input className="form-control" type="date" name="startDate" value={policyData.startDate} onChange={handleChange} />
+                <input className="form-control" type="date" name="startDate" value={policyData.policyDetails?.startDate} onChange={handleChange} />
 
                 <label className="form-label mt-2">Maturity Date</label>
-                <input className="form-control" type="date" name="maturityDate" value={policyData.maturityDate} onChange={handleChange} />
+                <input className="form-control" type="date" name="maturityDate" value={policyData.policyDetails?.endDate} onChange={handleChange} />
               </div>
 
               {/* Nominee Info */}
-              <div className="col-md-6">
-                <h6 className="section-heading"><i className="bi bi-person-badge me-2"></i>Nominee Information</h6>
-                <label className="form-label mt-2">Nominee Name</label>
-                <input className="form-control" value={policyData.nomineeName} name="nomineeName" onChange={handleChange} />
-
-                <label className="form-label mt-2">Nominee Relation</label>
-                <select className="form-select" name="nomineeRelation" value={policyData.nomineeRelation} onChange={handleChange}>
-                  <option>Wife</option>
-                  <option>Son</option>
-                  <option>Daughter</option>
-                </select>
-              </div>
+              
             </div>
 
             <div className="submit-btn">
-              <button className="btn">
+              <button
+              type="button" 
+              className="btn"
+              onClick={hanldeUpdate}
+              style={{ cursor: "pointer"}}
+              >
                 <i className="bi bi-floppy me-2"></i>Submit Alterations
               </button>
             </div>

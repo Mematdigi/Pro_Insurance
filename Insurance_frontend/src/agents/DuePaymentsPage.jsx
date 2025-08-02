@@ -144,7 +144,7 @@ const DuePaymentsPage = () => {
                       return (
                         <tr key={i}>
                           <td>{cust.name}</td>
-                          <td>{cust.type} Insurance</td>
+                          <td>{cust.insuranceType} </td>
                           <td>{cust.company}</td>
                           <td className="text-primary fw-semibold">₹{parseFloat(cust.premium).toLocaleString()}</td>
                           <td>{cust.dueDate}</td>

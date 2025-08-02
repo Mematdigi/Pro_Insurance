@@ -230,11 +230,15 @@ const AddFamilyMember = () => {
 
       if (checkRes.ok && checkData.exists) {
         console.log("✅ Policy already exists, skipping policy creation");
+        alert("✅ Member added successfully!")
+
         const updatedMembers = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
         const updatedData = await updatedMembers.json();
         if (updatedMembers.ok) {
         setFamilyList(updatedData.familyMembers || []);
+        console.log("✅ Family list updated");
       }
+      handleResetForms();
       return;
     }
         
@@ -284,6 +288,7 @@ const AddFamilyMember = () => {
     console.error("Failed to refresh family list:", refreshError);
   }
   handleResetForms();
+
 };
 
   const handleDelete = async (index) => {
