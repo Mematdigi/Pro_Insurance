@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
+import { useAuth } from "../context/AuthContext";
 
 const DuePaymentsPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -13,35 +14,43 @@ const DuePaymentsPage = () => {
     type: "",
   });
   const [modalData, setModalData] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const customers = JSON.parse(localStorage.getItem("manualCustomers")) || [];
-    console.log("Loaded customers:", customers);
-    const dueList = [];
+    const fetchDuePayments = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/due-next-month/${user.id}`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        console.log("Due payments data:", data);
+        if (res.ok) {
+          const formattedData = data.map((p) => ({
+            name: p.customerName || "Unknown",
+            company: p.company || "Unknown",
+            insuranceType: p.policyType || "N/A",
+            premium: p.policyDetails.premium,
+            dueDate: new Date(p.policyDetails?.endDate).toISOString().split("T")[0] || "N/A",
+            status: "Due",
+          }));
+          setAllCustomers(formattedData);
+          setFiltered(formattedData);
+        } else {
+          console.error("Failed to fetch due payments:", data);
+        } 
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
 
-    customers.forEach((cust) => {
-      cust.policies?.forEach((p) => {
-        dueList.push({
-          name: cust.name,
-          company: cust.company,
-          contact: cust.contact,
-          type: p.type,
-          premium: p.premium,
-          dueDate: p.dueDate,
-        });
-      });
-    });
+    if (user?.id) fetchDuePayments();
+  }, [user]);
 
-    setAllCustomers(dueList);
-    setFiltered(dueList);
-  }, []);
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    const newFilters = { ...filters, [name]: value };
-    setFilters(newFilters);
-    applyFilters(newFilters);
-  };
+  function handleFilterChange(e) {
+  const { name, value } = e.target;
+  const newFilters = { ...filters, [name]: value };
+  setFilters(newFilters);
+  applyFilters(newFilters);
+}
 
   const applyFilters = (filters) => {
     const f = allCustomers.filter((item) => {
@@ -135,7 +144,7 @@ const DuePaymentsPage = () => {
                       return (
                         <tr key={i}>
                           <td>{cust.name}</td>
-                          <td>{cust.type} Insurance</td>
+                          <td>{cust.insuranceType} </td>
                           <td>{cust.company}</td>
                           <td className="text-primary fw-semibold">₹{parseFloat(cust.premium).toLocaleString()}</td>
                           <td>{cust.dueDate}</td>

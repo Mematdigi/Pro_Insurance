@@ -1,17 +1,33 @@
 const FamilyGroup = require("../models/FamilyGroup");
 const Policy = require('../models/AgentPolicies');
+const mongoose = require("mongoose");
 
 exports.checkOrCreateGroup = async (req, res) => {
+  try {
     const {agentId, primaryHolder,policyNumber } = req.body;
+    console.log("Incoming:", { agentId, primaryHolder, policyNumber });
 
     if (!agentId || !primaryHolder || !policyNumber) {
         return res.status(400).json({ msg: "Missing required fields" });
     }
-  try {
-    let group = await FamilyGroup.findOne({primaryHolder, policyNumber });
-    if (!group) {
-      const newGroupId = "GRP" + Math.floor(100000 + Math.random() * 900000);
-        const newGroup = new FamilyGroup({
+    const policyExists = await Policy.findOne({
+      customerName: { $regex: new RegExp(`^${primaryHolder.trim()}$`, "i") },
+      policyNumber: policyNumber.trim(),
+      agentId: new mongoose.Types.ObjectId(agentId),
+    });
+    console.log("Policy exists:", policyExists);
+    if (!policyExists) {
+    return res.status(404).json({ msg: "Policy holder not found in DB" });
+  }
+
+  
+  let group = await FamilyGroup.findOne({
+    primaryHolder: {$regex: new RegExp(`^${primaryHolder.trim()}$`,"i")},
+    policyNumber: policyNumber.trim(),
+   });
+  if (!group) {
+    const newGroupId = "GRP" + Math.floor(100000 + Math.random() * 900000);
+      const newGroup = new FamilyGroup({
         agentId,
         groupId: newGroupId,
         primaryHolder,
@@ -23,12 +39,44 @@ exports.checkOrCreateGroup = async (req, res) => {
     }
 
 
-    res.status(200).json({groupId: group.groupId, msg: "Family group checked/created successfully"});
+    res.status(200).json({
+      groupId: group.groupId, msg: "Family group checked/created successfully"});
   } catch (err) {
     console.error("Family group creation error:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+exports.checkPolicyByNumber = async (req, res) => {
+  try {
+    const { policyNumber } = req.params;
+
+    if (!policyNumber) {
+      return res.status(400).json({ msg: "Policy number is required" });
+    }
+
+    // Find policy in DB
+    const policy = await Policy.findOne({ policyNumber: policyNumber });
+
+    if (!policy) {
+      return res.status(404).json({ exists: false, msg: "Policy not found" });
+    }
+
+    // Return policy holder details if found
+    return res.status(200).json({
+      exists: true,
+      policy: {
+        customerName: policy.customerName,
+        policyNumber: policy.policyNumber,
+        agentId: policy.agentId,
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error checking policy:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
 
 exports.addFamilyMember = async (req, res) => {
   const { groupId } = req.params;
@@ -105,5 +153,33 @@ exports.searchMemberByName = async (req, res) => {
   } catch (error) {
     console.error("❌ Error searching member by name:", error);
     return res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+exports.deleteFamilyMember = async (req, res) => {
+  try {
+    const { groupId, memberId } = req.params;
+
+    if (!groupId || !memberId) {
+      return res.status(400).json({ msg: "Group ID and Member ID are required" });
+    }
+
+    // Find the group and remove the member by ID
+    const updatedGroup = await FamilyGroup.findOneAndUpdate(
+      { groupId },
+      { $pull: { familyMembers: { _id: memberId } } }, // ✅ Pull the member by ID
+      { new: true }
+    );
+
+    if (!updatedGroup) {
+      return res.status(404).json({ msg: "Family group not found" });
+    }
+
+    return res.status(200).json({
+      msg: "Family member deleted successfully",
+    });
+  } catch (error) {
+    console.error("❌ Error deleting family member:", error);
+    return res.status(500).json({ msg: "Server error while deleting family member" });
   }
 };

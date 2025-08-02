@@ -5,6 +5,7 @@ const fetchAgentPolicies = require('../controllers/fetchAgentPoliciesController'
 const { getPoliciesByAgent, getInsuranceByCategory,getCoustomerPolicyList} = require('../controllers/policyController');
 const addPolicy = require('../controllers/addPolicyController');
 const getPolicies = require('../controllers/getUserPoliciesController');
+const mongoose = require("mongoose");
 
 const upload = require("../middleware/upload");
 const uploadExcelController = require("../controllers/uploadExcelController");
@@ -63,6 +64,29 @@ router.get('/due', async (req, res) => {
   }
 });
 
+router.get("/due-next-month/:agentId", async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    console.log ("Fetching due payments for agent:", agentId);
+    const today = new Date();
+    const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1); // Start of next month
+    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0); // End of next month
+    const policies = await Policy.find({ agentId :new mongoose.Types.ObjectId(agentId)});
+    console.log("Policies fetched for agent:", policies.length);
+    console.log("sample policy:", policies[0]);
+    
+    const duePolicies = policies.filter((policy) => {
+      if (!policy.policyDetails?.endDate) return false; // Skip policies without endDate
+      const endDate = new Date(policy.policyDetails.endDate);
+      return (endDate <= nextMonthEnd);
+    });
+    res.json(duePolicies);
+  } catch (error) {
+    console.error("❌ Error fetching due payments for next month:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.get("/customer/:id", async (req, res) => {
   try {
     const policy = await Policy.findById(req.params.id);
@@ -76,12 +100,15 @@ router.get("/customer/:id", async (req, res) => {
 
 router.post("/policies", async (req, res) => {
   try {
-    const newPolicy = new Policy(req.body);
+    const newPolicy = new Policy({
+      ...req.body,
+    agentId:new mongoose.Types.ObjectId(req.body.agentId)
+  });
     await newPolicy.save();
     res.status(201).json({ msg: "Policy added successfully" });
   } catch (error) {
-    console.error("Error adding policy:", error);
-    res.status(500).json({ msg: "Server error" });
+    console.error("Error adding policy:", error.message, error.stack);
+    res.status(500).json({ msg: error.message });
   }
 });
 
@@ -111,6 +138,43 @@ router.get("/check/:policyNumber", async (req, res) => {
     res.status(500).json({ msg: "Server error while checking policy" });
   }
 });
+
+// Fetch policy by policy number
+router.get("/policies/search", async (req, res) => {
+  try {
+    const { policyNumber } = req.query;
+    if (!policyNumber) return res.status(400).json({ msg: "Policy number is required" });
+
+    const policy = await Policy.findOne({ policyNumber: policyNumber.trim() });
+    if (!policy) return res.status(404).json({ msg: "Policy not found" });
+
+    res.json(policy);
+  } catch (error) {
+    console.error("Error searching policy:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// Update policy (partial updates)
+router.patch("/policies/update/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const updatedPolicy = await Policy.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPolicy) return res.status(404).json({ msg: "Policy not found" });
+    res.json({ msg: "Policy updated successfully", updatedPolicy });
+  } catch (error) {
+    console.error("Error updating policy:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
 
 
 //----------------------------------------------

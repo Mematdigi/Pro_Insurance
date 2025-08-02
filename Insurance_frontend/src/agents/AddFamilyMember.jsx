@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FaSearch, FaEye, FaArrowLeft } from "react-icons/fa";
 
@@ -14,7 +14,8 @@ const AddFamilyMember = () => {
   const [memberQuery, setMemberQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showPolicyForm, setShowPolicyForm] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false); // ✅ Control suggestions visibility
+  const [isPolicyFetched, setIsPolicyFetched] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [form, setForm] = useState({
     policyNumber: "",
@@ -25,7 +26,6 @@ const AddFamilyMember = () => {
     age: "",
   });
 
-  // ✅ Initialize policyForm with default values to prevent undefined errors
   const [policyForm, setPolicyForm] = useState({
     policyNumber: "",
     policyHolderName: "",
@@ -43,7 +43,6 @@ const AddFamilyMember = () => {
 
   const [familyList, setFamilyList] = useState([]);
 
-  // ✅ Check if member form is fully filled
   const isMemberFormValid =
     form.policyNumber && form.primaryHolder && form.memberName && form.relation && form.dob && form.age;
 
@@ -52,24 +51,40 @@ const AddFamilyMember = () => {
   };
 
   const handleSearchCustomer = async () => {
-    if (searchCustomer.name && searchCustomer.policyNumber) {
-      try {
-        const res = await fetch("http://localhost:5000/api/family/checkOrCreate", {
+    try {
+      const policyNumber = searchCustomer.policyNumber.trim();
+      const customerName = searchCustomer.name.trim();
+      if (!policyNumber || !customerName) {
+        alert("Please enter both policy number and customer name.");
+        return;
+      }
+      const res = await fetch(`http://localhost:5000/api/family/check-policy/${policyNumber}`);
+      const data = await res.json();
+
+      if (!data.exists) {
+        alert("Policy not found. Please check the policy number.");
+        return;
+      }
+      const primaryHolderName = data.policy?.customerName || searchCustomer.name;
+      const primaryPolicyNumber = data.policy?.policyNumber || searchCustomer.policyNumber;
+
+      if (primaryHolderName && primaryPolicyNumber) {
+        const createRes = await fetch("http://localhost:5000/api/family/checkOrCreate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             agentId: user?.id,
-            primaryHolder: searchCustomer.name,
-            policyNumber: searchCustomer.policyNumber,
+            primaryHolder: primaryHolderName,
+            policyNumber: primaryPolicyNumber,
           }),
         });
 
-        const data = await res.json();
-        if (res.ok) {
-          setGroupId(data.groupId);
+        const createData = await createRes.json();
+        if (createRes.ok) {
+          setGroupId(createData.groupId);
           setFormSubmitted(true);
 
-          const memberRes = await fetch(`http://localhost:5000/api/family/group/${data.groupId}`);
+          const memberRes = await fetch(`http://localhost:5000/api/family/group/${createData.groupId}`);
           const memberData = await memberRes.json();
 
           if (memberRes.ok) {
@@ -77,24 +92,24 @@ const AddFamilyMember = () => {
           }
           setForm((prev) => ({
             ...prev,
-            primaryHolder: searchCustomer.name,
-            policyNumber: searchCustomer.policyNumber,
+            primaryHolder: primaryHolderName,
+            policyNumber: primaryPolicyNumber,
           }));
         } else {
-          alert("❌ " + (data.msg || "Failed to fetch or create group"));
+          alert("❌ " + (createData.msg || "Failed to fetch or create group"));
         }
-      } catch (err) {
-        console.error("Search error:", err);
-        alert("Server error");
+      } else {
+        alert("Please provide valid primary holder name and policy number.");
       }
-    } else {
-      alert("Please fill in both fields.");
+    } catch (error) {
+      console.error("Error searching customer:", error);
+      alert("❌ Failed to search customer. Please try again.");
     }
   };
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (memberQuery.length < 1) { 
+      if (memberQuery.length < 2) { 
         setSuggestions([]);
         setShowSuggestions(false);
         return;
@@ -103,27 +118,35 @@ const AddFamilyMember = () => {
         const res = await fetch(`http://localhost:5000/api/family/search-member/${memberQuery}`);
         const data = await res.json();
         setSuggestions(data);
-        setShowSuggestions(data.length > 0); // ✅ Show suggestions if data exists
+        setShowSuggestions(data.length > 0);
       } catch (err) {
         console.error("Error fetching suggestions", err);
         setSuggestions([]);
         setShowSuggestions(false);
       }
     };
-    
-    // ✅ Add debounce to avoid too many API calls
-    const debounceTimer = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [memberQuery]);
+    fetchSuggestions();
+  },[memberQuery]);
 
-  // ✅ Auto-calculate age from DOB
+  // Auto-update policy form fields when adding a policy for a new member
+  /*
+  useEffect(() => {
+    if (showPolicyForm && form.memberName) {
+      setPolicyForm((prev) => ({
+        ...prev,
+        policyHolderName: form.memberName,
+      }));
+    }
+  }, [showPolicyForm, form.memberName]);
+  */
+
   const calculateAge = (dob) => {
     if (!dob) return "";
     const today = new Date();
     const birthDate = new Date(dob);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
@@ -132,32 +155,18 @@ const AddFamilyMember = () => {
 
   const handleMemberChange = (e) => {
     const { name, value } = e.target;
-    
-    // ✅ Auto-calculate age when DOB changes
     if (name === "dob") {
-      const calculatedAge = calculateAge(value);
       setForm((prevForm) => ({
         ...prevForm,
         [name]: value,
-        age: calculatedAge, // Auto-fill age
+        age: calculateAge(value),
       }));
-      
-      // ✅ Auto-shift to age field after DOB selection
-      setTimeout(() => {
-        const ageField = document.querySelector('input[name="age"]');
-        if (ageField) ageField.focus();
-      }, 100);
-      
     } else {
       setForm((prevForm) => ({
         ...prevForm,
         [name]: value,
       }));
-    }
-    
-    if (name === "memberName") {
-      setMemberQuery(value);
-      setShowSuggestions(value.length > 0); // ✅ Show suggestions when typing
+      if (name === "memberName") setMemberQuery(value);
     }
   };
 
@@ -170,26 +179,31 @@ const AddFamilyMember = () => {
   };
 
   const handleSavePolicy = async () => {
-    // ✅ Validate required fields before proceeding
     if (!form.memberName || !form.relation || !form.age) {
       alert("Please fill Member Name, Relation, and Age before saving.");
       return;
     }
-    if (!policyForm.policyNumber || !policyForm.policyHolderName || !policyForm.contact || !policyForm.company || !policyForm.category || !policyForm.type || !policyForm.premium || !policyForm.startDate || !policyForm.maturityDate) {
+
+    // Validate required policy fields
+    if (!policyForm.policyHolderName || !policyForm.contact || !policyForm.company || 
+        !policyForm.category || !policyForm.type || !policyForm.premium || 
+        !policyForm.paymentMode || !policyForm.startDate || !policyForm.maturityDate) {
       alert("Please fill all required policy fields.");
       return;
     }
 
     try {
-      // 1️⃣ Save Member in FamilyGroup
+      // Step 1: Save the member first
+      console.log("📝 Saving member...");
       const memberPayload = {
+        agentId: user?.id,
         name: form.memberName,
         relation: form.relation,
-        age: form.age,
-        dob: form.dob || ""
+        age: parseInt(form.age), // Convert to number
+        dob: form.dob || "",
       };
 
-      console.log("🚀 Sending Member Payload:", memberPayload);
+      console.log("Member payload:", memberPayload);
 
       const memberRes = await fetch(`http://localhost:5000/api/family/add/${groupId}`, {
         method: "POST",
@@ -198,82 +212,107 @@ const AddFamilyMember = () => {
       });
 
       const memberData = await memberRes.json();
+      console.log("Member response:", memberData);
+
       if (!memberRes.ok) {
-        console.error("Error saving member:", memberData);
+        console.error("❌ Member save failed:", memberData);
         alert(memberData.msg || "Failed to save member.");
         return;
       }
-      console.log("✅ Member saved:", memberData);
 
-      // ✅ Update family list immediately after saving member
-      const updatedMemberRes = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
-      const updatedMemberData = await updatedMemberRes.json();
-      if (updatedMemberRes.ok) {
-        setFamilyList(updatedMemberData.familyMembers || []);
-      }
+      console.log("✅ Member saved successfully!");
 
-      // 2️⃣ Check if Policy already exists
+      // Step 2: Check if policy already exists (only if policy number is provided)
+      
       const checkRes = await fetch(`http://localhost:5000/api/check/${policyForm.policyNumber}`);
       const checkData = await checkRes.json();
+      console.log("Policy check response:", checkData);
+
       if (checkRes.ok && checkData.exists) {
-        alert("⚠️ Policy already exists in the database!");
-        return;
+        console.log("✅ Policy already exists, skipping policy creation");
+        alert("✅ Member added successfully!")
+
+        const updatedMembers = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
+        const updatedData = await updatedMembers.json();
+        if (updatedMembers.ok) {
+        setFamilyList(updatedData.familyMembers || []);
+        console.log("✅ Family list updated");
       }
+      handleResetForms();
+      return;
+    }
+        
+    const policyPayload = {
+      policyNumber: policyForm.policyNumber,
+      customerName: policyForm.policyHolderName, // ✅ Fixed mapping
+      customerPhone: policyForm.contact,
+      customerEmail: policyForm.email || "",
+      company: policyForm.company,
+      insuranceType: policyForm.category,
+      policyType: policyForm.type,
+      agentId: user?.id,
+      policyDetails: {
+        premium: parseFloat(policyForm.premium), // Convert to number
+        paymentMode: policyForm.paymentMode,
+        startDate: policyForm.startDate,
+        endDate: policyForm.maturityDate, // ✅ Fixed mapping
+        branch: policyForm.branch || "",
+      },
+    };
+    console.log("Policy payload:", policyPayload);
+    const policyRes = await fetch("http://localhost:5000/api/policies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(policyPayload),
+    });
 
-      // 3️⃣ Prepare Policy Payload matching schema
-      const policyPayload = {
-        policyNumber: policyForm.policyNumber,
-        customerName: policyForm.policyHolderName,      // maps to customerName
-        customerPhone: policyForm.contact,             // maps to customerPhone
-        customerEmail: policyForm.email || "",         // optional but included
-        company: policyForm.company,
-        insuranceType: policyForm.category,            // maps insurance type
-        policyType: policyForm.type,
-        agentId: user?.id,                              // agent ID from auth context
-        policyDetails: {
-          premium: Number(policyForm.premium),
-          paymentMode: policyForm.paymentMode,
-          startDate: policyForm.startDate,
-          endDate: policyForm.maturityDate,           // maturityDate -> endDate
-          branch: policyForm.branch,
-        }
-      };
+    const policyData = await policyRes.json();
+    console.log("Policy response:", policyData);
+    if (!policyRes.ok) {
+      console.error("❌ Policy save failed:", policyData);
+      alert(policyData.msg || "Failed to save policy.");
+      return;
+    }
+    alert("✅ Member and Policy saved successfully!");
 
-      console.log("🚀 Sending Policy Payload:", policyPayload);
+      // Step 4: Refresh family members list
+      
+    
+    const updatedMembers = await fetch(`http://localhost:5000/api/family/group/${groupId}`);
+    const updatedData = await updatedMembers.json();
+    if (updatedMembers.ok) {
+      setFamilyList(updatedData.familyMembers || []);
+      console.log("✅ Family list updated");
+    }
+  } catch (refreshError) {
+    console.error("Failed to refresh family list:", refreshError);
+  }
+  handleResetForms();
 
-      // 4️⃣ Save Policy in Policy DB
-      const policyRes = await fetch("http://localhost:5000/api/policies", {
-        method: "POST",
+};
+
+  const handleDelete = async (index) => {
+    try {
+      const memberId = familyList[index]._id;
+      if (!memberId) return;
+
+      const deleteRes = await fetch(`http://localhost:5000/api/family/delete/${groupId}/${memberId}`, {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(policyPayload),
       });
 
-      const policyData = await policyRes.json();
-      if (!policyRes.ok) {
-        console.error("Error saving policy:", policyData);
-        alert(policyData.msg || "Failed to save policy.");
-        return;
+      if (deleteRes.ok) {
+        setFamilyList((prevList) => prevList.filter((_, i)=> i !== index));
+        alert("✅ Member deleted successfully!");
+      } else {
+        alert("❌ Failed to delete member.");
       }
-
-      console.log("✅ Policy saved:", policyData);
-      alert("Member and Policy saved successfully!");
-
-      // ✅ Reset forms after successful save
-      handleResetForms();
-
     } catch (error) {
-      console.error("❌ Error saving policy:", error);
-      alert("Unexpected error occurred while saving policy.");
+      console.error("Error deleting member:", error);
+      alert("❌ Error deleting member.");
     }
   };
 
-  const handleDelete = (index) => {
-    const updated = [...familyList];
-    updated.splice(index, 1);
-    setFamilyList(updated);
-  };
-
-  // ✅ Reset function to clear all forms
   const handleResetForms = () => {
     setForm((prev) => ({
       ...prev,
@@ -299,7 +338,7 @@ const AddFamilyMember = () => {
     setShowPolicyForm(false);
     setMemberQuery("");
     setSuggestions([]);
-    setShowSuggestions(false); // ✅ Hide suggestions
+    setShowSuggestions(false);
   };
 
   // Form styles
@@ -310,26 +349,6 @@ const AddFamilyMember = () => {
     borderRadius: '6px',
     fontSize: '14px',
     outline: 'none'
-  };
-
-  const suggestionListStyle = {
-    listStyle: 'none',
-    margin: 0,
-    padding: '5px',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    background: 'white',
-    position: 'absolute',
-    zIndex: 1000,
-    width: '100%',
-    maxHeight: '150px',
-    overflowY: 'auto'
-  };
-
-  const suggestionItemStyle = {
-    padding: '8px',
-    cursor: 'pointer',
-    borderBottom: '1px solid #ddd'
   };
 
   const addPolicyButtonStyle = {
@@ -354,7 +373,6 @@ const AddFamilyMember = () => {
     cursor: 'pointer'
   };
 
-  // ✅ Added missing resetButtonStyle
   const resetButtonStyle = {
     marginTop: '15px',
     backgroundColor: '#dc2626',
@@ -366,46 +384,43 @@ const AddFamilyMember = () => {
     cursor: 'pointer'
   };
 
+  const buttonPrimary = { backgroundColor: "#1e40af", color: "white", border: "none", padding: "10px 15px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" };
+  
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+    <div style={{ fontFamily: "Arial, sans-serif", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
       {/* Header */}
-      <div style={{ backgroundColor: '#fff', padding: '20px', borderBottom: '1px solid #e0e0e0', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <button onClick={() => navigate("/agent/dashboard")} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#007bff' }}>
+      <div style={{ backgroundColor: "#fff", padding: "20px", borderBottom: "1px solid #e0e0e0", marginBottom: "20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <button onClick={() => navigate("/agent/dashboard")} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "#007bff" }}>
               <FaArrowLeft />
             </button>
             <div>
-              <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>Add Family Member</h3>
-              <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                Add family members to existing policy and manage their policies
-              </p>
+              <h3 style={{ margin: "0 0 5px 0", color: "#333" }}>Add Family Member</h3>
+              <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>Add family members to existing policy and manage their policies</p>
             </div>
           </div>
-          <button style={{ backgroundColor: '#007bff', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer', fontSize: '14px' }}>
-            <FaEye style={{ marginRight: '5px' }} /> View Existing Policy
+          <button style={{ backgroundColor: "#007bff", color: "white", border: "none", padding: "10px 20px", borderRadius: "5px", cursor: "pointer", fontSize: "14px" }}>
+            <FaEye style={{ marginRight: "5px" }} /> View Existing Policy
           </button>
         </div>
       </div>
 
       {/* Search Section */}
       {!formSubmitted && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-          <h3 style={{ color: '#1d4ed8', marginBottom: '20px' }}>Search Customer</h3>
-          <div style={{ display: 'flex', gap: '20px', backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
+          <h3 style={{ color: "#1d4ed8", marginBottom: "20px" }}>Search Customer</h3>
+          <div style={{ display: "flex", gap: "20px", backgroundColor: "white", padding: "20px", borderRadius: "10px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
             <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 'bold' }}>Customer Name *</label>
-              <input type="text" placeholder="Enter customer name" value={searchCustomer.name} onChange={(e) => setSearchCustomer({ ...searchCustomer, name: e.target.value })}
-                style={{ width: '100%', padding: '10px', marginTop: '5px', border: '1px solid #ccc', borderRadius: '5px' }} />
+              <label style={{ fontWeight: "bold" }}>Customer Name *</label>
+              <input type="text" placeholder="Enter customer name" value={searchCustomer.name} onChange={(e) => setSearchCustomer({ ...searchCustomer, name: e.target.value })} style={inputStyle} />
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 'bold' }}>Policy Number *</label>
-              <input type="text" placeholder="Enter policy number (e.g., LIC12345678)" value={searchCustomer.policyNumber}
-                onChange={(e) => setSearchCustomer({ ...searchCustomer, policyNumber: e.target.value })}
-                style={{ width: '100%', padding: '10px', marginTop: '5px', border: '1px solid #ccc', borderRadius: '5px' }} />
+              <label style={{ fontWeight: "bold" }}>Policy Number *</label>
+              <input type="text" placeholder="Enter policy number" value={searchCustomer.policyNumber} onChange={(e) => setSearchCustomer({ ...searchCustomer, policyNumber: e.target.value })} style={inputStyle} />
             </div>
-            <div style={{ alignSelf: 'flex-end' }}>
-              <button onClick={handleSearchCustomer} style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <div style={{ alignSelf: "flex-end" }}>
+              <button onClick={handleSearchCustomer} style={{ ...buttonPrimary, backgroundColor: "#2563eb", display: "flex", alignItems: "center", gap: "8px" }}>
                 <FaSearch /> Search
               </button>
             </div>
@@ -415,17 +430,17 @@ const AddFamilyMember = () => {
 
       {/* Main Content */}
       {formSubmitted && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
           {/* Left Section */}
-          <div style={{ flex: '1' }}>
-            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <div style={{ flex: "1" }}>
+            <div style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
               {/* Group ID */}
-              <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '5px', marginBottom: '20px', border: '1px solid #e9ecef' }}>
-                <label style={{ fontWeight: 'bold', color: '#495057', fontSize: '14px' }}>Group ID:</label>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#007bff', marginTop: '5px' }}>{groupId}</div>
+              <div style={{ backgroundColor: "#f8f9fa", padding: "15px", borderRadius: "5px", marginBottom: "20px", border: "1px solid #e9ecef" }}>
+                <label style={{ fontWeight: "bold", color: "#495057", fontSize: "14px" }}>Group ID:</label>
+                <div style={{ fontSize: "16px", fontWeight: "bold", color: "#007bff", marginTop: "5px" }}>{groupId}</div>
               </div>
            
-              {/* ✅ Member Form */}
+             {/* Member Form */}
               {activeTab === "member" && (
                 <>
                   {/* Member Form Grid */}
@@ -437,7 +452,7 @@ const AddFamilyMember = () => {
                       marginBottom: "20px",
                     }}
                   >
-                    {/* Policy Number */}
+                    {/* Policy Number (Primary Holder Policy) */}
                     <div>
                       <label>Policy Number</label>
                       <input
@@ -465,7 +480,7 @@ const AddFamilyMember = () => {
                       />
                     </div>
 
-                    {/* Member Name with Dropdown and Suggestions */}
+                    {/* Member Name with Suggestions */}
                     <div style={{ position: "relative" }}>
                       <label>Member Name *</label>
                       <div style={{ position: "relative" }}>
@@ -479,120 +494,52 @@ const AddFamilyMember = () => {
                             setMemberQuery(e.target.value);
                           }}
                           onFocus={() => {
-                            if (memberQuery.length > 0) {
-                              setShowSuggestions(true);
-                            }
+                            if (memberQuery.length > 0) setShowSuggestions(true);
                           }}
-                          onBlur={() => {
-                            // ✅ Delay hiding suggestions to allow clicks
-                            setTimeout(() => setShowSuggestions(false), 200);
-                          }}
-                          style={{
-                            ...inputStyle,
-                            paddingRight: "35px", // Space for dropdown arrow
-                          }}
+                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                          style={{ ...inputStyle, paddingRight: "35px" }}
                         />
-                        {/* ✅ Fixed Dropdown Arrow Button */}
                         <button
                           type="button"
                           onClick={async () => {
-                            // ✅ Fetch all members when dropdown is clicked
                             try {
                               const res = await fetch('http://localhost:5000/api/family/search-member/all');
                               const data = await res.json();
                               setSuggestions(data);
                               setShowSuggestions(true);
-                              setMemberQuery(""); // Clear query to show all
-                              
-                              // Focus on input
-                              const memberInput = document.querySelector('input[name="memberName"]');
-                              if (memberInput) memberInput.focus();
+                              setMemberQuery("");
                             } catch (err) {
                               console.error("Error fetching all members:", err);
-                              // Fallback: trigger with "a" query
                               setMemberQuery("a");
                               setShowSuggestions(true);
                             }
                           }}
                           style={{
-                            position: "absolute",
-                            right: "8px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: "16px",
-                            color: "#666",
-                            padding: "4px",
-                            width: "24px",
-                            height: "24px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: "3px",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#f0f0f0";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "transparent";
+                            position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)",
+                            background: "none", border: "none", cursor: "pointer", fontSize: "16px", color: "#666"
                           }}
                         >
                           ▼
                         </button>
                       </div>
-                      
-                      {/* ✅ Enhanced Suggestions Dropdown with proper visibility control */}
+
+                      {/* Suggestions Dropdown */}
                       {showSuggestions && suggestions?.length > 0 && (
-                        <ul
-                          style={{
-                            listStyle: "none",
-                            margin: 0,
-                            padding: "5px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            background: "white",
-                            position: "absolute",
-                            zIndex: 2000,
-                            width: "100%",
-                            maxHeight: "150px",
-                            overflowY: "auto",
-                            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                            top: "100%",
-                            marginTop: "2px",
-                          }}
-                        >
+                        <ul style={{
+                          listStyle: "none", margin: 0, padding: "5px", border: "1px solid #ccc",
+                          borderRadius: "4px", background: "white", position: "absolute", zIndex: 2000,
+                          width: "100%", maxHeight: "150px", overflowY: "auto", boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                        }}>
                           {suggestions.map((sug) => (
-                            <li
-                              key={sug._id}
-                              style={{
-                                padding: "8px",
-                                cursor: "pointer",
-                                borderBottom: "1px solid #eee",
-                                transition: "background-color 0.2s",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#f8f9fa";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "white";
-                              }}
-                              onMouseDown={(e) => {
-                                e.preventDefault(); // ✅ Prevent input blur before click
-                              }}
+                            <li key={sug._id}
+                              style={{ padding: "8px", cursor: "pointer", borderBottom: "1px solid #eee" }}
+                              onMouseDown={(e) => e.preventDefault()}
                               onClick={async () => {
                                 setForm((prev) => ({ ...prev, memberName: sug.name }));
                                 setSuggestions([]);
                                 setShowSuggestions(false);
                                 setMemberQuery("");
-                                
-                                // ✅ Auto-shift to relation field
-                                setTimeout(() => {
-                                  const relationField = document.querySelector('select[name="relation"]');
-                                  if (relationField) relationField.focus();
-                                }, 100);
-                                
+
                                 try {
                                   const res = await fetch(`http://localhost:5000/api/by-id/${sug._id}`);
                                   const data = await res.json();
@@ -611,16 +558,22 @@ const AddFamilyMember = () => {
                                       startDate: data.policyDetails?.startDate || "",
                                       maturityDate: data.policyDetails?.endDate || "",
                                     }));
-                                  }
+                                    setIsPolicyFetched(true)
+                                  } else {
+                                    setPolicyForm((prev) => ({
+                                          ...prev,
+                                          policyHolderName: sug.name,
+                                          contact: sug.contact ||"",
+                                      }))
+
+                                }
                                 } catch (err) {
                                   console.error("Error fetching policy data:", err);
                                 }
                               }}
                             >
                               <div style={{ fontWeight: "500" }}>{sug.name}</div>
-                              <div style={{ fontSize: "12px", color: "#666" }}>
-                                {sug.contact || "No Contact"}
-                              </div>
+                              <div style={{ fontSize: "12px", color: "#666" }}>{sug.contact || "No Contact"}</div>
                             </li>
                           ))}
                         </ul>
@@ -633,14 +586,7 @@ const AddFamilyMember = () => {
                       <select
                         name="relation"
                         value={form.relation || ""}
-                        onChange={(e) => {
-                          handleMemberChange(e);
-                          // ✅ Auto-shift to DOB field after relation selection
-                          setTimeout(() => {
-                            const dobField = document.querySelector('input[name="dob"]');
-                            if (dobField) dobField.focus();
-                          }, 100);
-                        }}
+                        onChange={handleMemberChange}
                         style={inputStyle}
                       >
                         <option value="">Select Relation</option>
@@ -652,19 +598,19 @@ const AddFamilyMember = () => {
                       </select>
                     </div>
 
-                    {/* DOB with Auto Age calculation */}
+                    {/* DOB */}
                     <div>
                       <label>Date of Birth</label>
                       <input
                         type="date"
                         name="dob"
                         value={form.dob || ""}
-                        onChange={handleMemberChange} // This will auto-calculate age
+                        onChange={handleMemberChange}
                         style={inputStyle}
                       />
                     </div>
 
-                    {/* Age - Auto calculated */}
+                    {/* Age */}
                     <div>
                       <label>Age (Auto-calculated)</label>
                       <input
@@ -672,17 +618,13 @@ const AddFamilyMember = () => {
                         name="age"
                         placeholder="Age will be calculated from DOB"
                         value={form.age || ""}
-                        onChange={handleMemberChange}
-                        style={{
-                          ...inputStyle,
-                          backgroundColor: form.dob ? "#f8f9fa" : "white", // Gray out if auto-calculated
-                        }}
-                        readOnly={!!form.dob} // Make read-only if DOB is selected
+                        readOnly
+                        style={{ ...inputStyle, backgroundColor: form.dob ? "#f8f9fa" : "white" }}
                       />
                     </div>
                   </div>
 
-                  {/* ✅ Add Policy Button - Fixed conditional rendering */}
+                  {/* Add Policy Button */}
                   {isMemberFormValid && !showPolicyForm && (
                     <button
                       type="button"
@@ -693,23 +635,47 @@ const AddFamilyMember = () => {
                     </button>
                   )}
 
-                  {/* ✅ Policy Form - Fixed conditional rendering with proper null checks */}
-                  {showPolicyForm && policyForm && (
+                  {/* Policy Form */}
+                  {showPolicyForm && (
                     <div className="policy-form" style={{ marginTop: "20px" }}>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                          gap: "15px",
-                        }}
-                      >
-                        {/* Contact Number */}
+                      <div style={{
+                        display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "15px"
+                      }}>
+                        {/* Policy Number */}
                         <div>
-                          <label>Contact Number</label>
+                          <label>Policy Number</label>
+                          <input
+                            type="text"
+                            name="policyNumber"
+                            placeholder="Enter Policy Number (optional)"
+                            value={policyForm.policyNumber || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          />
+                        </div>
+
+                        
+
+                        {/* Policy Holder Name */}
+                        <div>
+                          <label>Policy Holder Name *</label>
+                          <input
+                            type="text"
+                            name="policyHolderName"
+                            placeholder="Auto-fetched Member Name"
+                            value={policyForm.policyHolderName || ""}
+                            onChange={handlePolicyChange}
+                            style={inputStyle}
+                          />
+                        </div>
+
+                        {/* Contact */}
+                        <div>
+                          <label>Contact Number *</label>
                           <input
                             type="text"
                             name="contact"
-                            placeholder="Auto-fetched Contact"
+                            placeholder="Enter Contact Number"
                             value={policyForm.contact || ""}
                             onChange={handlePolicyChange}
                             style={inputStyle}
@@ -722,7 +688,7 @@ const AddFamilyMember = () => {
                           <input
                             type="email"
                             name="email"
-                            placeholder="Auto-fetched Email"
+                            placeholder="Enter Email"
                             value={policyForm.email || ""}
                             onChange={handlePolicyChange}
                             style={inputStyle}
@@ -731,7 +697,7 @@ const AddFamilyMember = () => {
 
                         {/* Insurance Company */}
                         <div>
-                          <label>Insurance Company</label>
+                          <label>Insurance Company *</label>
                           <select
                             name="company"
                             value={policyForm.company || ""}
@@ -755,8 +721,7 @@ const AddFamilyMember = () => {
                                 value="Life Insurance"
                                 checked={policyForm.category === "Life Insurance"}
                                 onChange={handlePolicyChange}
-                              />
-                              Life
+                              /> Life
                             </label>
                             <label>
                               <input
@@ -765,8 +730,7 @@ const AddFamilyMember = () => {
                                 value="General Insurance"
                                 checked={policyForm.category === "General Insurance"}
                                 onChange={handlePolicyChange}
-                              />
-                              General
+                              /> General
                             </label>
                           </div>
                         </div>
@@ -840,20 +804,12 @@ const AddFamilyMember = () => {
                         </div>
                       </div>
 
-                      {/* Save & Reset Buttons */}
+                      {/* Save & Reset */}
                       <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-                        <button
-                          type="button"
-                          style={saveButtonStyle}
-                          onClick={handleSavePolicy}
-                        >
+                        <button type="button" style={saveButtonStyle} onClick={handleSavePolicy}>
                           Save Member & Policy
                         </button>
-                        <button
-                          type="button"
-                          style={resetButtonStyle}
-                          onClick={handleResetForms}
-                        >
+                        <button type="button" style={resetButtonStyle} onClick={handleResetForms}>
                           Reset
                         </button>
                       </div>
@@ -861,15 +817,16 @@ const AddFamilyMember = () => {
                   )}
                 </>
               )}
+
             </div>
           </div>
 
           {/* Right Section: Existing Members */}
-          <div style={{ flex: '1' }}>
-            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-              <h5 style={{ marginBottom: '15px', color: '#333' }}>Existing Family Members</h5>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ flex: "1" }}>
+            <div style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+              <h5 style={{ marginBottom: "15px", color: "#333" }}>Existing Family Members</h5>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f8f9fa' }}>
                       <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Name</th>
@@ -880,7 +837,7 @@ const AddFamilyMember = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {familyList.length > 0 ? familyList.map((member, i) => (
+                    {familyList && familyList.length > 0 ? familyList.map((member, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid #dee2e6' }}>
                         <td style={{ padding: '10px' }}>{member.name}</td>
                         <td style={{ padding: '10px' }}>{member.relation}</td>
