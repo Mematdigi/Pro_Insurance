@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useNotification } from "../context/NotificationContext"; // ✅ Import notification context
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNotification } from "../context/NotificationContext";
+
 import {
   faTachometerAlt,
   faUsers,
@@ -20,50 +21,51 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
-const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
+const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar}) => {
   const { user } = useAuth();
-  const { notificationsCount, fetchNotificationCount } = useNotification(); // ✅ Use notifications from context
+  const { notificationsCount, fetchNotificationCount } = useNotification(); 
   const location = useLocation();
+
   const [isOpen, setIsOpen] = useState(
     JSON.parse(localStorage.getItem("sidebarOpen")) ?? initialOpen
   );
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-          const agent = user || JSON.parse(localStorage.getItem("user"));
-          if (!agent?.id) {
-            console.warn("❌ Agent ID not found.");
-            return;
-          }
-  const premiumDueCount = 5;
+  // ✅ Ensure agent is valid
+  const agent = user || JSON.parse(localStorage.getItem("user"));
 
+  // ✅ Fetch notifications when Sidebar mounts (first load or refresh)
+  useEffect(() => {
+    if (agent?.id) {
+      fetchNotificationCount();
+    }
+  }, [agent, fetchNotificationCount]);
+
+  // ✅ Toggle dropdown menus
   const toggleDropdown = (label) => {
     setOpenDropdown(openDropdown === label ? null : label);
   };
 
-    useEffect(() => {
-    fetchNotificationCount();
-  }, [fetchNotificationCount]);
-
-
-  // ✅ Toggle sidebar manually and persist state
+  // ✅ Toggle sidebar open/collapse
   const handleToggleSidebar = () => {
     const newState = !isOpen;
     setIsOpen(newState);
     localStorage.setItem("sidebarOpen", JSON.stringify(newState));
   };
 
-  // ✅ Handle responsiveness but do NOT auto-close sidebar
+
+  // ✅ Handle responsiveness
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const premiumDueCount = 5; // Static placeholder (can be dynamic later)
   const selectedCategory = localStorage.getItem("selectedInsuranceType") || "Life Insurance";
 
+  // ✅ Menu definitions
   const generalInsuranceMenu = [
     { label: "Dashboard", path: "/agent/dashboard", icon: faTachometerAlt },
     { label: "Import Policy", path: "/agent/import-excel", icon: faFileInvoiceDollar },
@@ -72,7 +74,9 @@ const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
     { label: "Customer List", path: "/agent/customers", icon: faUsers },
     { label: "Policy Alterations", path: "/agent/policy-alterations", icon: faExchangeAlt },
     { label: "Premium Due", path: "/agent/due-payments", icon: faCalendarAlt, badge: premiumDueCount },
-    { label: "Notifications", path: "/agent/notification", icon: faPlus, badge: notificationsCount },
+    { label: "Notifications", path: "/agent/notification", icon: faPlus, badge: notificationsCount
+
+    },
     { label: "Logout", path: "/login", icon: faSignOutAlt },
   ];
 
@@ -99,16 +103,19 @@ const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
 
   const customerMenu = [
     { label: "Dashboard", path: "/customer/dashboard", icon: faTachometerAlt },
-    { label: "Add Polices", path: "/customer/addinsurance", icon: faDownload },
+    { label: "Add Policies", path: "/customer/addinsurance", icon: faDownload },
     { label: "Policies", path: "/customer/mypolicies", icon: faShieldAlt },
     { label: "Due Payments", path: "/customer/due-payments", icon: faFileInvoiceDollar },
     { label: "Notifications", path: "/customer/notification", icon: faPlus, badge: notificationsCount },
     { label: "Logout", path: "/login", icon: faSignOutAlt },
   ];
 
-  let menu = user?.role === "Agent"
-    ? selectedCategory === "General Insurance" ? generalInsuranceMenu : lifeInsuranceMenu
-    : customerMenu;
+  const menu =
+    user?.role === "Agent"
+      ? selectedCategory === "General Insurance"
+        ? generalInsuranceMenu
+        : lifeInsuranceMenu
+      : customerMenu;
 
   return (
     <>
@@ -122,7 +129,11 @@ const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
         </button>
       )}
 
-      <div className={`sidebar-container ${isOpen ? "open" : "collapsed"} ${isMobile && !isOpen ? "mobile-closed" : ""}`}>
+      <div
+        className={`sidebar-container ${isOpen ? "open" : "collapsed"} ${
+          isMobile && !isOpen ? "mobile-closed" : ""
+        }`}
+      >
         <div className="sidebar-header">
           {!isMobile && (
             <button className="toggle-btn" onClick={handleToggleSidebar}>
@@ -171,7 +182,7 @@ const Sidebar = ({ isOpen: initialOpen = true, toggleSidebar }) => {
                 >
                   <FontAwesomeIcon icon={item.icon} className="menu-icon" />
                   {isOpen && <span className="menu-label">{item.label}</span>}
-                  {item.badge && <span className="menu-badge">{item.badge}</span>}
+             {item.badge > 0 && <span className="menu-badge">{item.badge}</span>}
                 </NavLink>
               </li>
             )

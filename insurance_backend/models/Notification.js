@@ -5,6 +5,7 @@ const NotificationSchema = new mongoose.Schema({
   policyId: { type: mongoose.Schema.Types.ObjectId, ref: "Policy", required: true },
   message: { type: String, required: true },
   occasion: { type: String },
+  seen: { type: Boolean, default: false }, 
   createdAt: { type: Date, default: Date.now }
 });
 
