@@ -1,7 +1,7 @@
 
 const Policy = require('../models/AgentPolicies');
 const dayjs = require('dayjs');
-const { sendSms, } = require('../services/twilio.services');
+const { sendSms,sendWhatsAppMessage } = require('../services/twilio.services');
 const {saveNotification,formatTimeToAmPm} = require('../utils/helperFunction'); // Import save function
 const Notification = require("../models/Notification");  // Ensure correct model is used
 
@@ -16,9 +16,9 @@ sendNotification = async (req, res) => {
       console.log(`📩 Sending SMS to ${phone}: ${message}`);
 
       // Simulate SMS sending (replace with actual sendSms logic)
-      // const smsSent = true; 
+      const smsSent = true; 
 
-   const smsSent =    await sendWhatsAppMessage(phone, message);
+  //  const smsSent =    await sendWhatsAppMessage(phone, message);
 
 res.json({
           message: "Message sent successfully",
