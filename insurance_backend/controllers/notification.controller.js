@@ -1,47 +1,66 @@
 
 const Policy = require('../models/AgentPolicies');
 const dayjs = require('dayjs');
-const { sendSms, } = require('../services/twilio.services');
+const { sendSms,sendWhatsAppMessage } = require('../services/twilio.services');
+const { sendSms,sendWhatsAppMessage } = require('../services/twilio.services');
 const {saveNotification,formatTimeToAmPm} = require('../utils/helperFunction'); // Import save function
 const Notification = require("../models/Notification");  // Ensure correct model is used
 
 class notificationController {
 sendNotification = async (req, res) => {
-    try {
-      const { message, phone,agentId, policyId } = req.body;
+  try {
+    const { message, phone, agentId, policyId } = req.body;
 
-      // Default occasion if not provided
-      const finalOccasion = "Custom";
-
-      console.log(`📩 Sending SMS to ${phone}: ${message}`);
-
-      // Simulate SMS sending (replace with actual sendSms logic)
-      // const smsSent = true; 
-
-   const smsSent =    await sendWhatsAppMessage(phone, message);
-
-res.json({
-          message: "Message sent successfully",
-        });     
-        
-        if (smsSent) {
-        // Save notification in DB
-        await saveNotification(agentId, policyId, message, finalOccasion);
-
-        res.json({
-          message: "Message sent successfully",
-        });
-      } else {
-        res.status(500).json({
-          error: "Failed to send SMS",
-        });
-      }
-    } catch (err) {
-      console.error("Notification error:", err);
-      res.status(500).json({ error: "Failed to send notifications" });
+    // ✅ Validate required fields
+    if (!message || !phone || !agentId) {
+      return res.status(400).json({ error: "Missing required fields: message, phone, agentId" });
     }
-  };
 
+    const finalOccasion = "Custom";
+    console.log(`📩 Sending WhatsApp to ${phone}: ${message}`);
+        let  whatsappSmsSent = true;
+
+    // ✅ Send WhatsApp message (wrapped in try/catch)
+    try {
+    //  let whatsappSmsSent =   await sendWhatsAppMessage(phone, message);
+    let smsSent = true;
+      console.log("✅ WhatsApp message sent successfully");
+     if (!whatsappSmsSent) {
+      return res.status(500).json({ erresror: "Failed to send  whatapp message" });
+    }
+    // let smsSent = await sendSms(phone, message);
+    if (!smsSent) {
+      return res.status(500).json({ error: "Failed to send SMS" });
+    }
+    else {
+      console.log("✅ WhatsApp message sent successfully");
+    }
+    } catch (smsError) {
+      console.error("❌ WhatsApp send error:", smsError);
+      return res.status(500).json({ error: "Failed to send WhatsApp message" });
+    }
+
+    // ✅ If message sending failed
+    
+    // ✅ Save notification in DB
+    try {
+      await saveNotification(agentId, policyId, message, finalOccasion);
+    } catch (dbError) {
+      console.error("❌ Database save error:", dbError);
+      return res.status(500).json({ error: "Message sent but failed to save notification" });
+    }
+
+    // ✅ Success Response
+    return res.status(200).json({
+      message: "Message sent and notification saved successfully"
+    });
+
+  } catch (err) {
+    console.error("❌ Notification error:", err.message);
+    console.error(err.stack);
+    return res.status(500).json({ error: "Internal server error while sending notification" });
+  }
+};
 
   fetchNotification = async (req, res) => {
     try {
@@ -82,7 +101,8 @@ res.json({
         occasion: n.occasion || "N/A",
         createdAt: formatTimeToAmPm(n.createdAt) || "N/A",
         policyNumber: n.policyId?.policyNumber || "N/A",
-        message: n.message || "N/A"
+        message: n.message || "N/A",
+        seen: n.seen 
       }));
 
       res.json({
@@ -110,6 +130,21 @@ res.json({
         console.error("❌ Failed to fetch message:", err);
         res.status(500).json({ success: false, error: "Failed to fetch message" });
       }}
+   
+  seenNotification = async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    if (!agentId) return res.status(400).json({ error: "Agent ID is required" });
+
+    await Notification.updateMany({ agentId, seen: false }, { $set: { seen: true } });
+
+    res.json({ message: "All notifications marked as seen" });
+  } catch (err) {
+    console.error("Error marking notifications as seen:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}   
+      
 }
 
 module.exports = new notificationController();

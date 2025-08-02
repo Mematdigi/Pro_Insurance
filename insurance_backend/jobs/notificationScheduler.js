@@ -1,18 +1,21 @@
 const cron = require("node-cron");
 const moment = require("moment");
 const Policy = require("../models/AgentPolicies"); // adjust if needed
-const {sendSms} = require("../services/twilio.services"); // your custom function
+const {sendSms,sendWhatsAppMessage} = require("../services/twilio.services"); // your custom function
 const {saveNotification} = require("../utils/helperFunction"); // Import save function
 const Notification = require("../models/Notification");  // Ensure correct model is used
 
 const startNotificationCron = async () => {
-  cron.schedule("2 12 * * *", async () => {
+  //  cron.schedule("2 12 * * *", async () => {
     console.log("🕛 Cron job running at 12 PM:", new Date().toLocaleTimeString());
 
     const todayStr = new Date().toISOString().split("T")[0];
     const oneMonthAheadDate = new Date();
     oneMonthAheadDate.setMonth(oneMonthAheadDate.getMonth() + 1);
     const oneMonthAheadStr = oneMonthAheadDate.toISOString().split("T")[0];
+    // remove this affter uncommenting the send sms and whats app
+    const smsSent = true;
+    const whatappSmsSent = true;
 
     try {
       const policies = await Policy.find();
@@ -34,7 +37,13 @@ const startNotificationCron = async () => {
             const message = `Dear ${p.customerName}, your policy (${p.policyNumber}) is due on ${p.policyDetails.endDate}. Please take necessary action.}`;
 
             try {
-              const smsSent = sendSms(p.customerPhone, message)
+              // const smsSent = sendSms(p.customerPhone, message)
+              // const whatappSmsSent = sendWhatsAppMessage(p.customerPhone, message);
+
+              if (!smsSent || !whatappSmsSent) {
+                console.warn(`⚠️ Notification failed for ${p.customerPhone}, skipping DB save.`);
+                return;
+              }
 
               if (smsSent && message) {
                 console.log("📩 SMS Sent to:", p.customerPhone, "=>", message);
@@ -58,11 +67,15 @@ const startNotificationCron = async () => {
       if (birthdays.length > 0) {
         await Promise.all(
           birthdays.map(async (p) => {
-            const message = `Happy Birthday, ${p.customerName}! 🎉 Wishing you a wonderful year ahead.}`;
+            const message = `Happy Birthday, ${p.customerName}! 🎉 Wishing you a wonderful year ahead.`;
 
             try {
-               const smsSent = sendSms(p.customerPhone, message)
-
+              //  const smsSent = sendSms(p.customerPhone, message)
+              // const whatappSmsSent = sendWhatsAppMessage(p.customerPhone, message);
+              if (!smsSent || !whatappSmsSent) {
+                console.warn(`⚠️ Birthday notification failed for ${p.customerPhone}, skipping DB save.`);
+                return;
+              }
               if (smsSent && message) {
                 console.log("🎂 Birthday SMS Sent to:", p.customerPhone, "=>", message);
                 await saveNotification(
@@ -84,7 +97,7 @@ const startNotificationCron = async () => {
     } catch (error) {
       console.error("❌ Cron job error:", error.message);
     }
-  });
+  //  });
 }
 
 

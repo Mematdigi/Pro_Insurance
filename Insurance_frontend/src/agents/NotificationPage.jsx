@@ -19,7 +19,9 @@ const NotificationPage = () => {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [wishMessage, setWishMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
-  
+  const [readNotifications, setReadNotifications] = useState(new Set());
+
+
 
   //handleClick
   const handleWishClick = (person, type) => {
@@ -46,6 +48,9 @@ const NotificationPage = () => {
 
        // Immediately fetch latest notifications
           fetchNotification();
+          if (!res.ok) {
+        throw new Error("Failed to send notification");
+      }
 
       alert(`✅ ${ "Message sent successfully!"}`);
     } catch (error) {
@@ -123,62 +128,32 @@ const NotificationPage = () => {
 
   // Log Filter Conditions
 
-  // let logs = []; // Initialize logs state
-  // Add Logs Stat
-// Logs Data
-
-  //  const [logs] = useState([
-  //   {
-  //     id: 1,
-  //     customerName: "John Doe",
-  //     customerEmail: "john.doe@email.com",
-  //     customerPhone: "+1 234 567 8900",
-  //     message: "Happy Birthday! 🎉 Wishing you joy and prosperity.",
-  //     createdAt: "2024-07-29 10:30 AM",
-  //     status: "Success",
-  //     occasion: "Birthday",
-  //     policyNumber: "POL-2024-001",
-  //   },
-  //   {
-  //     id: 2,
-  //     customerName: "Sarah Johnson",
-  //     customerEmail: "sarah.j@email.com",
-  //     customerPhone: "+1 234 567 8901",
-  //     message: "Policy Due Reminder! Please renew to avoid lapse.",
-  //     createdAt: "2024-07-28 09:00 AM",
-  //     status: "Success",
-  //     occasion: "Policy Due",
-  //     policyNumber: "POL-2024-002",
-  //   },
-  //   {
-  //     id: 3,
-  //     customerName: "Mike Wilson",
-  //     customerEmail: "mike.w@email.com",
-  //     customerPhone: "+1 234 567 8902",
-  //     message: "Custom message sent successfully.",
-  //     createdAt: "2024-07-27 04:15 PM",
-  //     status: "Success",
-  //     occasion: "Custom",
-  //     policyNumber: "POL-2024-003",
-  //   },
-  //   {
-  //     id: 4,
-  //     customerName: "Emily Davis",
-  //     customerEmail: "emily.davis@email.com",
-  //     customerPhone: "+1 234 567 8903",
-  //     message: "Happy Birthday Emily! 🎂",
-  //     createdAt: "2024-07-26 08:45 AM",
-  //     status: "Success",
-  //     occasion: "Birthday",
-  //     policyNumber: "POL-2024-004",
-  //   },
-  // ]);
 
   const [activeTab, setActiveTab] = useState("All");
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [showLogModal, setShowLogModal] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
-  const [logs, setLogs] = useState([]); // ✅ Store logs properly in state
+
+    const [logs, setLogs] = useState([]); // ✅ Store logs properly in state
+
+  // ✅ ADDED: Calculate unread notifications count
+  const unreadCount = logs.filter(log => !readNotifications.has(log.notificationId)).length;
+
+  // ✅ ADDED: Function to mark notification as read
+  const markAsRead = (notificationId) => {
+    setReadNotifications(prev => new Set([...prev, notificationId]));
+  };
+
+  // ✅ ADDED: Function to mark all notifications as read
+  const markAllAsRead = () => {
+    const allNotificationIds = logs.map(log => log.notificationId);
+    setReadNotifications(new Set(allNotificationIds));
+  };
+
+  // ✅ ADDED: Function to check if notification is read
+  const isNotificationRead = (notificationId) => {
+    return readNotifications.has(notificationId);
+  };
 
   const fetchNotification = async () => {
             const agent = user || JSON.parse(localStorage.getItem("user"));
@@ -201,30 +176,42 @@ const NotificationPage = () => {
         (notification_list.data || []).filter((log) => log.occasion?.toString().trim() === activeTab)
     );
 }
-      
-  // const interval = setInterval(fetchNotification, 10000);
-
-  // // Cleanup interval
-  // return () => clearInterval(interval);
-
         };
 
   // Handle Tab Filter
   useEffect(() => {
-        
     fetchNotification();
   }, [activeTab]);
 
-  // ✅ useEffect for fetching on mount or tab change
 
+
+  // ✅ useEffect for fetching on mount or tab change
+  // ✅ MODIFIED: Updated handleViewLog to mark notification as read when viewed
   const handleViewLog = (log) => {
     setSelectedLog(log);
     setShowLogModal(true);
+    // ✅ ADDED: Mark this notification as read when viewing
+    markAsRead(log.notificationId);
   };
+
+  // ✅ ADDED: Function to handle viewing all notifications (called when visiting notification page)
+  const handleViewAllNotifications = () => {
+    markAllAsRead();
+  };
+
+  useEffect(() => {
+    // This simulates visiting the notification page and marking all as read
+    // You can call this function when user clicks on notifications in sidebar
+     handleViewAllNotifications();
+  }, []);
 
   return (
     <div className="dashboard-layout notification-page-wrapper d-flex">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} 
+      toggleSidebar={toggleSidebar}  
+       unreadNotificationCount={unreadCount} 
+        onNotificationClick={handleViewAllNotifications} // ✅ ADDED: Pass function to mark all as read
+ />
       <div className="main-content p-4 w-100 notification-page">
         <div className="top-banner p-4 mb-4 shadow-sm d-flex justify-content-between align-items-center">
           <div>
