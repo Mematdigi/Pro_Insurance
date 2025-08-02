@@ -17,4 +17,6 @@ router.get("/fetch-notification/:agentId", notificationController.fetchNotificat
 
 router.get("/view-message/:message_id", notificationController.viewMessage);
 
+router.put("/mark-read/:agentId",notificationController.seenNotification)
+
 module.exports = router;
