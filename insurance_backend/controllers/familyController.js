@@ -21,7 +21,10 @@ exports.checkOrCreateGroup = async (req, res) => {
   }
 
   
-  let group = await FamilyGroup.findOne({primaryHolder, policyNumber });
+  let group = await FamilyGroup.findOne({
+    primaryHolder: {$regex: new RegExp(`^${primaryHolder.trim()}$`,"i")},
+    policyNumber: policyNumber.trim(),
+   });
   if (!group) {
     const newGroupId = "GRP" + Math.floor(100000 + Math.random() * 900000);
       const newGroup = new FamilyGroup({
