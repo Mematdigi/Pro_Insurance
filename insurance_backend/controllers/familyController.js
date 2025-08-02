@@ -152,3 +152,31 @@ exports.searchMemberByName = async (req, res) => {
     return res.status(500).json({ msg: "Server Error" });
   }
 };
+
+exports.deleteFamilyMember = async (req, res) => {
+  try {
+    const { groupId, memberId } = req.params;
+
+    if (!groupId || !memberId) {
+      return res.status(400).json({ msg: "Group ID and Member ID are required" });
+    }
+
+    // Find the group and remove the member by ID
+    const updatedGroup = await FamilyGroup.findOneAndUpdate(
+      { groupId },
+      { $pull: { familyMembers: { _id: memberId } } }, // ✅ Pull the member by ID
+      { new: true }
+    );
+
+    if (!updatedGroup) {
+      return res.status(404).json({ msg: "Family group not found" });
+    }
+
+    return res.status(200).json({
+      msg: "Family member deleted successfully",
+    });
+  } catch (error) {
+    console.error("❌ Error deleting family member:", error);
+    return res.status(500).json({ msg: "Server error while deleting family member" });
+  }
+};

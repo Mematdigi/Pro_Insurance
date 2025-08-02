@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FaSearch, FaEye, FaArrowLeft } from "react-icons/fa";
 
-
 const AddFamilyMember = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -146,10 +145,11 @@ const AddFamilyMember = () => {
   };
 
   const handleSavePolicy = async () => {
-  if (!form.memberName || !form.relation || !form.age) {
-    alert("Please fill Member Name, Relation, and Age before saving.");
-    return;
+    if (!form.memberName || !form.relation || !form.age) {
+      alert("Please fill Member Name, Relation, and Age before saving.");
+      return;
   }
+
   if (!policyForm.policyNumber || !policyForm.policyHolderName || !policyForm.contact || !policyForm.company || !policyForm.category || !policyForm.type || !policyForm.premium || !policyForm.startDate || !policyForm.maturityDate) {
     alert("Please fill all required policy fields.");
     return;
@@ -308,7 +308,10 @@ const handleDelete = (index) => {
               {/* ✅ Member Form */}
               {activeTab === "member" && (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginBottom: '20px' }}>
+                  <div
+                   style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginBottom: '20px' }}>
                     <input type="text" name="policyNumber" placeholder="Enter policy number" value={form.policyNumber} onChange={handleMemberChange} />
                     <input type="text" name="primaryHolder" placeholder="Enter primary holder name" value={form.primaryHolder} onChange={handleMemberChange} />
                     <div>

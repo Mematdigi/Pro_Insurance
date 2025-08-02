@@ -100,12 +100,15 @@ router.get("/customer/:id", async (req, res) => {
 
 router.post("/policies", async (req, res) => {
   try {
-    const newPolicy = new Policy(req.body);
+    const newPolicy = new Policy({
+      ...req.body,
+    agentId:new mongoose.Types.ObjectId(req.body.agentId)
+  });
     await newPolicy.save();
     res.status(201).json({ msg: "Policy added successfully" });
   } catch (error) {
-    console.error("Error adding policy:", error);
-    res.status(500).json({ msg: "Server error" });
+    console.error("Error adding policy:", error.message, error.stack);
+    res.status(500).json({ msg: error.message });
   }
 });
 
