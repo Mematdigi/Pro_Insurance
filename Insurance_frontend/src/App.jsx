@@ -65,7 +65,7 @@ function App() {
         <Route path="/agent/due-payments" element={<DuePaymentsPage />} />
         <Route path="/agent/report" element={<ImportReportPage />} />
         <Route path="/agent/add-family" element={<AddFamilyMember />} />
-        <Route path="/agent/family-history" element={<FamilyHistory />} />
+       {/* <Route path="/agent/family-history" element={<FamilyHistory />} /> */}
         <Route path="/agent/policy-alterations" element={<PolicyAlterations />} />
         <Route path="/agent/premium-deposit" element={<PremiumDeposit/>}></Route>
         <Route path="/agent/medical-history" element={<MedicalHistoryPage/>}></Route>
