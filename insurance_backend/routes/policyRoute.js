@@ -139,6 +139,43 @@ router.get("/check/:policyNumber", async (req, res) => {
   }
 });
 
+// Fetch policy by policy number
+router.get("/policies/search", async (req, res) => {
+  try {
+    const { policyNumber } = req.query;
+    if (!policyNumber) return res.status(400).json({ msg: "Policy number is required" });
+
+    const policy = await Policy.findOne({ policyNumber: policyNumber.trim() });
+    if (!policy) return res.status(404).json({ msg: "Policy not found" });
+
+    res.json(policy);
+  } catch (error) {
+    console.error("Error searching policy:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// Update policy (partial updates)
+router.patch("/policies/update/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const updatedPolicy = await Policy.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPolicy) return res.status(404).json({ msg: "Policy not found" });
+    res.json({ msg: "Policy updated successfully", updatedPolicy });
+  } catch (error) {
+    console.error("Error updating policy:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+
 
 //----------------------------------------------
 
