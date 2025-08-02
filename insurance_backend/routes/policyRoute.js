@@ -78,7 +78,7 @@ router.get("/due-next-month/:agentId", async (req, res) => {
     const duePolicies = policies.filter((policy) => {
       if (!policy.policyDetails?.endDate) return false; // Skip policies without endDate
       const endDate = new Date(policy.policyDetails.endDate);
-      return (endDate >= nextMonthStart && endDate <= nextMonthEnd);
+      return (endDate <= nextMonthEnd);
     });
     res.json(duePolicies);
   } catch (error) {
